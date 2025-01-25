@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,16 +29,6 @@ fun DemoScreen(
 ) {
     val demoUiState by demoViewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val dataDir = File(context.filesDir, "tessdata")
-    dataDir.mkdirs()
-    val copiedFile = File(dataDir, "eng.traineddata")
-    if (!copiedFile.exists()) {
-        context.assets.open("eng.traineddata").use { input ->
-            copiedFile.outputStream().use { output ->
-                input.copyTo(output, 1024)
-            }
-        }
-    }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -49,12 +40,13 @@ fun DemoScreen(
             fontSize = 26.sp
         )
 
-        Image(painter = painterResource(R.drawable.a35), contentDescription = null)
+        if (demoUiState.segmented == null) {
+            Image(painter = painterResource(R.drawable.demo), contentDescription = "Original image")
+        } else {
+            Image(bitmap = demoUiState.segmented!!.asImageBitmap(), contentDescription = "Segmented image")
+        }
 
-        Button(onClick = { demoViewModel.recognizeImage(
-            context.filesDir.absolutePath,
-            BitmapFactory.decodeResource(context.resources, R.drawable.a35)
-        ) }) {
+        Button(onClick = { demoViewModel.recognizeImage(BitmapFactory.decodeResource(context.resources, R.drawable.demo)) }) {
             Text(text = "Start")
         }
 
