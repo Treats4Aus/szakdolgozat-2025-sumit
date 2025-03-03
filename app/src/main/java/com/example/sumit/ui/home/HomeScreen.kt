@@ -1,16 +1,19 @@
 package com.example.sumit.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
+import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -56,17 +60,31 @@ fun HomeScreen(
         )
     )
 
-    Column(modifier = modifier.fillMaxSize()) {
-        Text(text = "Home")
-        Button(onClick = onNewScan) {
-            Text(text = "New")
-        }
-        Spacer(modifier = Modifier.weight(1f))
+    Scaffold(bottomBar = {
         SumItBottomNavigationBar(
             currentTab = currentTab,
             onTabPressed = { currentTab = it },
             navigationItemContentList = navigationItemContentList
         )
+    },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNewScan) {
+                Icon(imageVector = Icons.Default.DocumentScanner, contentDescription = "Scan notes")
+            }
+        }) { innerPadding ->
+        Column(
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(Color.LightGray)
+        ) {
+            Text(text = "Home")
+            when (currentTab) {
+                HomeTab.Recent -> RecentNotesTab()
+                HomeTab.Notes -> MyNotesTab()
+                HomeTab.Profile -> ProfileTab()
+            }
+        }
     }
 }
 
