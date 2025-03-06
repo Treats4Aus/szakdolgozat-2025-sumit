@@ -74,8 +74,8 @@ fun HomeScreen(
         }) { innerPadding ->
         Column(
             modifier = modifier
-                .padding(innerPadding)
                 .fillMaxSize()
+                .padding(innerPadding)
                 .background(Color.LightGray)
         ) {
             Text(text = "Home")

@@ -1,7 +1,8 @@
 package com.example.sumit.ui
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -48,7 +49,8 @@ fun SumItApp(
             startDestination = SumItScreen.Home.name,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .navigationBarsPadding()
+                .consumeWindowInsets(innerPadding)
         ) {
             composable(route = SumItScreen.Home.name) {
                 HomeScreen(onNewScan = { navController.navigate(SumItScreen.Scan.name) })
@@ -86,7 +88,7 @@ fun SumItAppBar(
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun SumItAppPreview() {
     SumItApp()
