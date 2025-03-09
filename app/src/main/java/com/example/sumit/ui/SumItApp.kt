@@ -1,8 +1,14 @@
 package com.example.sumit.ui
 
-import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -50,12 +56,28 @@ fun SumItApp(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding()
-                .consumeWindowInsets(innerPadding)
+                .padding(top = innerPadding.calculateTopPadding()),
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
         ) {
             composable(route = SumItScreen.Home.name) {
                 HomeScreen(onNewScan = { navController.navigate(SumItScreen.Scan.name) })
             }
-            composable(route = SumItScreen.Scan.name) {
+            composable(
+                route = SumItScreen.Scan.name,
+                enterTransition = {
+                    slideIntoContainer(
+                        animationSpec = tween(300, easing = EaseIn),
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        animationSpec = tween(300, easing = EaseOut),
+                        towards = AnimatedContentTransitionScope.SlideDirection.End
+                    )
+                }
+            ) {
                 ScanScreen(onCancel = { navController.navigateUp() })
             }
         }
