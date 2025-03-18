@@ -92,7 +92,12 @@ fun SumItAppBar(
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Text(currentScreen.name) },
+        title = {
+            Text(
+                text = currentScreen.name,
+                style = MaterialTheme.typography.displayLarge
+            )
+        },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
