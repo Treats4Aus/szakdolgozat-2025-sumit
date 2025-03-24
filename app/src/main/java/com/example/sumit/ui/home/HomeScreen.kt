@@ -1,6 +1,5 @@
 package com.example.sumit.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,6 +10,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.sumit.ui.home.notes.MyNotesTab
@@ -77,9 +76,8 @@ fun HomeScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
-                .background(Color.LightGray)
         ) {
-            Text(text = "Home")
+            Text(text = "Home", style = MaterialTheme.typography.displayMedium)
             when (currentTab) {
                 HomeTab.Recent -> RecentNotesTab()
                 HomeTab.Notes -> MyNotesTab()
@@ -108,7 +106,10 @@ private fun SumItBottomNavigationBar(
                     )
                 },
                 label = {
-                    Text(navItem.text)
+                    Text(
+                        text = navItem.text,
+                        style = MaterialTheme.typography.labelSmall
+                    )
                 }
             )
         }
