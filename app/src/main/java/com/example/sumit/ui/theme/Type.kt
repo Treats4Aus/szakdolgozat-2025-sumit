@@ -12,9 +12,9 @@ val WinkySans = FontFamily(
     Font(R.font.winky_sans_medium)
 )
 
-val WorkSans = FontFamily(
-    Font(R.font.work_sans_regular),
-    Font(R.font.work_sans_semi_bold, weight = FontWeight.SemiBold)
+val Rubik = FontFamily(
+    Font(R.font.rubik_regular),
+    Font(R.font.rubik_semi_bold, weight = FontWeight.SemiBold)
 )
 
 // Set of Material typography styles to start with
@@ -25,12 +25,12 @@ val Typography = Typography(
         fontSize = 32.sp
     ),
     displayMedium = TextStyle(
-        fontFamily = WorkSans,
+        fontFamily = Rubik,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = WorkSans,
+        fontFamily = Rubik,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
@@ -39,7 +39,7 @@ val Typography = Typography(
     labelSmall = TextStyle(
         fontFamily = WinkySans,
         fontWeight = FontWeight.Normal,
-        fontSize = 12.sp
+        fontSize = 14.sp
     )
     /* Other default text styles to override
     titleLarge = TextStyle(
