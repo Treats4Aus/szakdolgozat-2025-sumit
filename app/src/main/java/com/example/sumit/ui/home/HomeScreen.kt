@@ -1,13 +1,21 @@
 package com.example.sumit.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,9 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.sumit.R
 import com.example.sumit.ui.home.notes.MyNotesTab
 
 enum class HomeTab {
@@ -68,9 +81,7 @@ fun HomeScreen(
         )
     },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNewScan) {
-                Icon(imageVector = Icons.Default.DocumentScanner, contentDescription = "Scan notes")
-            }
+            NewScanFAB({ _ -> onNewScan() })
         }) { innerPadding ->
         Column(
             modifier = modifier
@@ -84,6 +95,55 @@ fun HomeScreen(
                 HomeTab.Profile -> ProfileTab()
             }
         }
+    }
+}
+
+@Composable
+private fun NewScanFAB(
+    onNewScan: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier, horizontalAlignment = Alignment.End) {
+        AnimatedVisibility(visible = expanded) {
+            Column {
+                NewScanOption(
+                    icon = Icons.Default.CameraAlt,
+                    text = stringResource(R.string.take_photo),
+                    modifier = Modifier.clickable { onNewScan(true) }
+                )
+
+                NewScanOption(
+                    icon = Icons.Default.Upload,
+                    text = stringResource(R.string.select_from_gallery),
+                    modifier = Modifier.clickable { onNewScan(false) }
+                )
+            }
+        }
+
+        FloatingActionButton(onClick = { expanded = !expanded }) {
+            Icon(imageVector = Icons.Default.DocumentScanner, contentDescription = "Scan notes")
+        }
+    }
+}
+
+@Composable
+fun NewScanOption(
+    icon: ImageVector,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .width(120.dp)
+            .background(colorResource(R.color.transparent_tile))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = icon, contentDescription = text)
+        Text(text)
     }
 }
 
