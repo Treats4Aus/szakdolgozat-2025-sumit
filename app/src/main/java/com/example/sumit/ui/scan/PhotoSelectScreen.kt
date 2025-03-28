@@ -11,20 +11,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun ScanScreen(
+fun PhotoSelectScreen(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxSize().background(Color.White)) {
-        Text(text = "Scan")
+    Column(modifier = modifier
+        .fillMaxSize()
+        .background(Color.White)) {
+        Text(text = "Select photos")
         Button(onClick = onCancel) {
             Text(text = "Cancel")
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-private fun ScanScreenPreview() {
-    ScanScreen(onCancel = { })
+private fun PhotoSelectScreenPreview() {
+    PhotoSelectScreen(onCancel = { })
 }

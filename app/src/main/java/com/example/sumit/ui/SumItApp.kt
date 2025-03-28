@@ -1,5 +1,6 @@
 package com.example.sumit.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -21,18 +22,20 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.sumit.R
 import com.example.sumit.ui.home.HomeScreen
-import com.example.sumit.ui.scan.ScanScreen
+import com.example.sumit.ui.scan.PhotoSelectScreen
 
-enum class SumItScreen {
-    Home,
-    Scan
+enum class SumItScreen(@StringRes val title: Int) {
+    Home(title = R.string.home),
+    PhotoSelect(title = R.string.select_photos)
 }
 
 @Composable
@@ -61,10 +64,11 @@ fun SumItApp(
             exitTransition = { ExitTransition.None }
         ) {
             composable(route = SumItScreen.Home.name) {
-                HomeScreen(onNewScan = { navController.navigate(SumItScreen.Scan.name) })
+                HomeScreen(onNewScan = { navController.navigate(SumItScreen.PhotoSelect.name) })
             }
+
             composable(
-                route = SumItScreen.Scan.name,
+                route = SumItScreen.PhotoSelect.name,
                 enterTransition = {
                     slideIntoContainer(
                         animationSpec = tween(300, easing = EaseIn),
@@ -78,7 +82,7 @@ fun SumItApp(
                     )
                 }
             ) {
-                ScanScreen(onCancel = { navController.navigateUp() })
+                PhotoSelectScreen(onCancel = { navController.navigateUp() })
             }
         }
     }
@@ -94,7 +98,7 @@ fun SumItAppBar(
     TopAppBar(
         title = {
             Text(
-                text = currentScreen.name,
+                text = stringResource(currentScreen.title),
                 style = MaterialTheme.typography.displayLarge
             )
         },
