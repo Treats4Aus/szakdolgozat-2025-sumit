@@ -1,28 +1,49 @@
 package com.example.sumit.utils
 
 import com.example.sumit.data.notes.Note
+import java.util.Date
 
 object DataSource {
     val notes = listOf(
         Note(
             id = 0,
-            title = "Physics"
+            created = Date(),
+            lastModified = Date(),
+            title = "Physics",
+            content = "aaa",
+            summary = "a"
         ),
         Note(
             id = 1,
-            title = "Literature"
+            created = Date(),
+            lastModified = Date(),
+            title = "Literature",
+            content = "aaa",
+            summary = "a"
         ),
         Note(
             id = 2,
-            title = "Maths"
+            created = Date(),
+            lastModified = Date(),
+            title = "Maths",
+            content = "aaa",
+            summary = "a"
         ),
         Note(
             id = 3,
-            title = "Art"
+            created = Date(),
+            lastModified = Date(),
+            title = "Art",
+            content = "aaa",
+            summary = "a"
         ),
         Note(
             id = 4,
-            title = "Music"
+            created = Date(),
+            lastModified = Date(),
+            title = "Music",
+            content = "aaa",
+            summary = "a"
         )
     )
 }

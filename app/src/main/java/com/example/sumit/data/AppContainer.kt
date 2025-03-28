@@ -1,8 +1,8 @@
 package com.example.sumit.data
 
 import android.content.Context
+import com.example.sumit.data.notes.LocalNotesRepository
 import com.example.sumit.data.notes.NotesRepository
-import com.example.sumit.data.notes.OfflineNotesRepository
 
 interface AppContainer {
     val notesRepository: NotesRepository
@@ -10,6 +10,6 @@ interface AppContainer {
 
 class AppDataContainer(private val context: Context) : AppContainer {
     override val notesRepository: NotesRepository by lazy {
-        OfflineNotesRepository()
+        LocalNotesRepository(SumItDatabase.getDatabase(context).noteDao())
     }
 }
