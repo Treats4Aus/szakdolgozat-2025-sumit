@@ -3,7 +3,9 @@ package com.example.sumit.ui.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,11 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.example.sumit.R
 import com.example.sumit.ui.home.notes.MyNotesTab
 
@@ -54,6 +57,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     var currentTab by remember { mutableStateOf(HomeTab.Recent) }
+    var expanded by remember { mutableStateOf(false) }
 
     val navigationItemContentList = listOf(
         NavigationItemContent(
@@ -73,26 +77,35 @@ fun HomeScreen(
         )
     )
 
-    Scaffold(bottomBar = {
-        SumItBottomNavigationBar(
-            currentTab = currentTab,
-            onTabPressed = { currentTab = it },
-            navigationItemContentList = navigationItemContentList
-        )
-    },
-        floatingActionButton = {
-            NewScanFAB({ _ -> onNewScan() })
-        }) { innerPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding())
-        ) {
-            Text(text = "Home", style = MaterialTheme.typography.displayMedium)
-            when (currentTab) {
-                HomeTab.Recent -> RecentNotesTab()
-                HomeTab.Notes -> MyNotesTab()
-                HomeTab.Profile -> ProfileTab()
+    Box(modifier = Modifier.clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null
+    ) { expanded = false }) {
+        Scaffold(bottomBar = {
+            SumItBottomNavigationBar(
+                currentTab = currentTab,
+                onTabPressed = { currentTab = it },
+                navigationItemContentList = navigationItemContentList
+            )
+        },
+            floatingActionButton = {
+                NewScanFAB(
+                    expanded = expanded,
+                    onFABClick = { expanded = !expanded },
+                    onNewScan = { _ -> onNewScan() }
+                )
+            }) { innerPadding ->
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(bottom = innerPadding.calculateBottomPadding())
+            ) {
+                Text(text = "Home", style = MaterialTheme.typography.displayMedium)
+                when (currentTab) {
+                    HomeTab.Recent -> RecentNotesTab()
+                    HomeTab.Notes -> MyNotesTab()
+                    HomeTab.Profile -> ProfileTab()
+                }
             }
         }
     }
@@ -100,14 +113,19 @@ fun HomeScreen(
 
 @Composable
 private fun NewScanFAB(
+    expanded: Boolean,
+    onFABClick: () -> Unit,
     onNewScan: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var expanded by remember { mutableStateOf(false) }
 
-    Column(modifier = modifier, horizontalAlignment = Alignment.End) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.column_gap)),
+        horizontalAlignment = Alignment.End
+    ) {
         AnimatedVisibility(visible = expanded) {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.column_gap))) {
                 NewScanOption(
                     icon = Icons.Default.CameraAlt,
                     text = stringResource(R.string.take_photo),
@@ -122,7 +140,7 @@ private fun NewScanFAB(
             }
         }
 
-        FloatingActionButton(onClick = { expanded = !expanded }) {
+        FloatingActionButton(onClick = onFABClick) {
             Icon(imageVector = Icons.Default.DocumentScanner, contentDescription = "Scan notes")
         }
     }
@@ -136,13 +154,17 @@ fun NewScanOption(
 ) {
     Row(
         modifier = modifier
-            .width(120.dp)
+            .clip(MaterialTheme.shapes.small)
+            .width(dimensionResource(R.dimen.floating_card_width))
             .background(colorResource(R.color.transparent_tile))
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(dimensionResource(R.dimen.medium_padding)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = text)
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            modifier = Modifier.padding(end = dimensionResource(R.dimen.medium_padding))
+        )
         Text(text)
     }
 }

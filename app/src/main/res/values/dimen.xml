@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="small_padding">4dp</dimen>
+    <dimen name="medium_padding">8dp</dimen>
+    <dimen name="large_padding">16dp</dimen>
+    <dimen name="floating_card_width">172dp</dimen>
+    <dimen name="column_gap">4dp</dimen>
+</resources>
