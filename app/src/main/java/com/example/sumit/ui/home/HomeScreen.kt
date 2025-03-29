@@ -39,7 +39,14 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.sumit.R
+import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.home.notes.MyNotesTab
+import com.example.sumit.ui.navigation.NavigationDestination
+
+object HomeDestination : NavigationDestination {
+    override val route = "home"
+    override val titleRes = R.string.home
+}
 
 enum class HomeTab {
     Recent, Notes, Profile
@@ -53,7 +60,7 @@ private data class NavigationItemContent(
 
 @Composable
 fun HomeScreen(
-    onNewScan: () -> Unit,
+    onNewScan: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var currentTab by remember { mutableStateOf(HomeTab.Recent) }
@@ -81,24 +88,31 @@ fun HomeScreen(
         interactionSource = remember { MutableInteractionSource() },
         indication = null
     ) { expanded = false }) {
-        Scaffold(bottomBar = {
-            SumItBottomNavigationBar(
-                currentTab = currentTab,
-                onTabPressed = { currentTab = it },
-                navigationItemContentList = navigationItemContentList
-            )
-        },
+        Scaffold(
+            topBar = {
+                SumItAppBar(
+                    title = stringResource(HomeDestination.titleRes),
+                    canNavigateBack = false
+                )
+            },
+            bottomBar = {
+                SumItBottomNavigationBar(
+                    currentTab = currentTab,
+                    onTabPressed = { currentTab = it },
+                    navigationItemContentList = navigationItemContentList
+                )
+            },
             floatingActionButton = {
                 NewScanFAB(
                     expanded = expanded,
                     onFABClick = { expanded = !expanded },
-                    onNewScan = { _ -> onNewScan() }
+                    onNewScan = onNewScan
                 )
             }) { innerPadding ->
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(bottom = innerPadding.calculateBottomPadding())
+                    .padding(innerPadding)
             ) {
                 Text(text = "Home", style = MaterialTheme.typography.displayMedium)
                 when (currentTab) {
