@@ -11,8 +11,13 @@ class PhotoSelectViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
     private val _uiState = MutableStateFlow(PhotoSelectUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val useCamera: Boolean =
-        checkNotNull(savedStateHandle[PhotoSelectDestination.selectModeArg])
+    init {
+        _uiState.update { currentState ->
+            currentState.copy(
+                useCamera = checkNotNull(savedStateHandle[PhotoSelectDestination.selectModeArg])
+            )
+        }
+    }
 
     fun addPhoto(photo: Bitmap) {
         _uiState.update { currentState ->
@@ -23,4 +28,7 @@ class PhotoSelectViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
     }
 }
 
-data class PhotoSelectUiState(val photos: List<Bitmap> = listOf())
+data class PhotoSelectUiState(
+    val photos: List<Bitmap> = listOf(),
+    val useCamera: Boolean = false
+)
