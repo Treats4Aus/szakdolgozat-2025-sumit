@@ -19,7 +19,8 @@ object AppViewModelProvider {
 
         initializer {
             PhotoSelectViewModel(
-                this.createSavedStateHandle()
+                photosRepository = sumItApplication().container.photosRepository,
+                savedStateHandle = this.createSavedStateHandle()
             )
         }
     }

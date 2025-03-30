@@ -1,13 +1,9 @@
 package com.example.sumit.ui.scan
 
-import android.graphics.ImageDecoder
-import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,15 +25,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.navigation.NavigationDestination
+
+private const val TAG = "PhotoSelectScreen"
 
 object PhotoSelectDestination : NavigationDestination {
     override val route = "photo_select"
@@ -52,21 +49,12 @@ fun PhotoSelectScreen(
     modifier: Modifier = Modifier,
     viewModel: PhotoSelectViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val pickMedia =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
-                Log.d("PhotoPicker", "Selected URI: $uri")
-
-                val bitmap = if (Build.VERSION.SDK_INT >= 28) {
-                    val source = ImageDecoder.createSource(context.contentResolver, uri)
-                    ImageDecoder.decodeBitmap(source)
-                } else {
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                }
-
-                viewModel.addPhoto(bitmap)
+                Log.d(TAG, "Selected URI: $uri")
+                viewModel.addPhoto(uri)
             }
         }
 
@@ -93,13 +81,14 @@ fun PhotoSelectScreen(
         ) {
             LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                 items(uiState.photos) { photo ->
-                    Image(bitmap = photo.asImageBitmap(), contentDescription = null)
+                    AsyncImage(model = photo, contentDescription = null)
                 }
             }
 
             AddPhotoButtons(
                 onGalleryClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                onCameraClick = { }
+                onCameraClick = { },
+                onContinueClick = viewModel::savePhotosToTemp
             )
         }
     }
@@ -109,6 +98,7 @@ fun PhotoSelectScreen(
 fun AddPhotoButtons(
     onGalleryClick: () -> Unit,
     onCameraClick: () -> Unit,
+    onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
@@ -132,6 +122,10 @@ fun AddPhotoButtons(
 
                 Text(stringResource(R.string.take_photo))
             }
+        }
+
+        Button(onClick = onContinueClick) {
+            Text("Next")
         }
     }
 }
