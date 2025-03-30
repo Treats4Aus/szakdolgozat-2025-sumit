@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,8 +50,10 @@ fun PhotoSelectScreen(
     modifier: Modifier = Modifier,
     viewModel: PhotoSelectViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    val pickMedia =
+
+    val pickMediaLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
                 Log.d(TAG, "Selected URI: $uri")
@@ -58,9 +61,26 @@ fun PhotoSelectScreen(
             }
         }
 
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { photoTaken ->
+            if (photoTaken) {
+                viewModel.addPhotoFromCamera()
+            }
+        }
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                viewModel.launchCamera(context, cameraLauncher)
+            }
+        }
+
     LaunchedEffect(Unit) {
-        if (!uiState.useCamera) {
-            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        if (uiState.useCamera) {
+            viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+        } else {
+            pickMediaLauncher
+                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
     }
 
@@ -86,8 +106,16 @@ fun PhotoSelectScreen(
             }
 
             AddPhotoButtons(
-                onGalleryClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                onCameraClick = { },
+                onGalleryClick = {
+                    pickMediaLauncher.launch(
+                        PickVisualMediaRequest(
+                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                        )
+                    )
+                },
+                onCameraClick = {
+                    viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+                },
                 onContinueClick = viewModel::savePhotosToTemp
             )
         }

@@ -1,12 +1,20 @@
 package com.example.sumit.ui.scan
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.sumit.data.photos.PhotosRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.io.File
+import java.util.UUID
 
 class PhotoSelectViewModel(
     private val photosRepository: PhotosRepository,
@@ -31,12 +39,49 @@ class PhotoSelectViewModel(
         }
     }
 
+    fun addPhotoFromCamera() = addPhoto(_uiState.value.cameraPhotoUri)
+
     fun savePhotosToTemp() {
         photosRepository.movePhotosToTemp(_uiState.value.photos)
     }
+
+    fun checkCameraPermission(
+        context: Context,
+        permissionLauncher: ManagedActivityResultLauncher<String, Boolean>,
+        cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>
+    ) {
+        val permissionCheckResult =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+            launchCamera(context, cameraLauncher)
+        } else {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    fun launchCamera(context: Context, launcher: ManagedActivityResultLauncher<Uri, Boolean>) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                cameraPhotoUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    context.createImageFile()
+                )
+            )
+        }
+        launcher.launch(_uiState.value.cameraPhotoUri)
+    }
+}
+
+fun Context.createImageFile(): File {
+    val name = String.format("temp-photo-%s", UUID.randomUUID().toString())
+    val extension = ".png"
+    val image = File.createTempFile(name, extension, cacheDir)
+    return image
 }
 
 data class PhotoSelectUiState(
     val photos: List<Uri> = listOf(),
+    val cameraPhotoUri: Uri = Uri.EMPTY,
     val useCamera: Boolean = false
 )
