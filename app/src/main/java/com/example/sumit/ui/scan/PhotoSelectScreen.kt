@@ -76,11 +76,14 @@ fun PhotoSelectScreen(
         }
 
     LaunchedEffect(Unit) {
-        if (uiState.useCamera) {
-            viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
-        } else {
-            pickMediaLauncher
-                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        if (uiState.useCamera != null) {
+            if (uiState.useCamera == true) {
+                viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+            } else {
+                pickMediaLauncher
+                    .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
+            viewModel.disableDefaultLaunch()
         }
     }
 

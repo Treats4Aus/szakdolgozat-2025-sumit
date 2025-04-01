@@ -71,6 +71,14 @@ class PhotoSelectViewModel(
         }
         launcher.launch(_uiState.value.cameraPhotoUri)
     }
+
+    fun disableDefaultLaunch() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                useCamera = null
+            )
+        }
+    }
 }
 
 fun Context.createImageFile(): File {
@@ -83,5 +91,5 @@ fun Context.createImageFile(): File {
 data class PhotoSelectUiState(
     val photos: List<Uri> = listOf(),
     val cameraPhotoUri: Uri = Uri.EMPTY,
-    val useCamera: Boolean = false
+    val useCamera: Boolean? = false
 )
