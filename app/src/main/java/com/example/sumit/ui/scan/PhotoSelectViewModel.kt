@@ -41,6 +41,15 @@ class PhotoSelectViewModel(
 
     fun addPhotoFromCamera() = addPhoto(_uiState.value.cameraPhotoUri)
 
+    fun removePhoto(index: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                photos = currentState.photos.slice(0..<index)
+                        + currentState.photos.slice((index + 1)..<(currentState.photos.size))
+            )
+        }
+    }
+
     fun savePhotosToTemp() {
         photosRepository.movePhotosToTemp(_uiState.value.photos)
     }

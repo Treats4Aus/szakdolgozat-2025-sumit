@@ -5,4 +5,5 @@
     <dimen name="large_padding">16dp</dimen>
     <dimen name="floating_card_width">172dp</dimen>
     <dimen name="column_gap">4dp</dimen>
+    <dimen name="photo_grid_min_width">136dp</dimen>
 </resources>
