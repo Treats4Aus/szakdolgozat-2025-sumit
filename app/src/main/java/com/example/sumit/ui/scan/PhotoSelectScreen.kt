@@ -58,6 +58,7 @@ import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.navigation.NavigationDestination
+import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
 
 private const val TAG = "PhotoSelectScreen"
@@ -77,9 +78,12 @@ fun PhotoSelectScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
     var selectedPhotoIndex by remember { mutableStateOf<Int?>(null) }
+
+    val cropState = viewModel.imageCropper.cropState
 
     val pickMediaLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -151,6 +155,10 @@ fun PhotoSelectScreen(
             )
         }
 
+        if (cropState != null) {
+            ImageCropperDialog(state = cropState)
+        }
+
         if (selectedPhotoIndex != null) {
             ModalBottomSheet(
                 onDismissRequest = { selectedPhotoIndex = null },
@@ -161,6 +169,7 @@ fun PhotoSelectScreen(
                         icon = Icons.Default.Crop,
                         text = stringResource(R.string.crop_image),
                         onClick = {
+                            viewModel.cropPhoto(selectedPhotoIndex!!, context)
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {
                                     selectedPhotoIndex = null
