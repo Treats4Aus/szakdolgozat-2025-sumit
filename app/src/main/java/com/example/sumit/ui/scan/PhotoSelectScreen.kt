@@ -22,19 +22,30 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Crop
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -47,6 +58,7 @@ import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
 
 private const val TAG = "PhotoSelectScreen"
 
@@ -65,6 +77,9 @@ fun PhotoSelectScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    var selectedPhotoIndex by remember { mutableStateOf<Int?>(null) }
 
     val pickMediaLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -117,7 +132,7 @@ fun PhotoSelectScreen(
         ) {
             PhotoGrid(
                 photos = uiState.photos,
-                onDelete = { viewModel.removePhoto(it) },
+                onDelete = { selectedPhotoIndex = it },
                 modifier = Modifier.weight(1f)
             )
 
@@ -134,6 +149,42 @@ fun PhotoSelectScreen(
                 },
                 onContinueClick = viewModel::savePhotosToTemp
             )
+        }
+
+        if (selectedPhotoIndex != null) {
+            ModalBottomSheet(
+                onDismissRequest = { selectedPhotoIndex = null },
+                sheetState = sheetState
+            ) {
+                Column(modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))) {
+                    BottomSheetOption(
+                        icon = Icons.Default.Crop,
+                        text = stringResource(R.string.crop_image),
+                        onClick = {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    selectedPhotoIndex = null
+                                }
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(thickness = 2.dp)
+
+                    BottomSheetOption(
+                        icon = Icons.Default.Delete,
+                        text = stringResource(R.string.delete_image),
+                        onClick = {
+                            viewModel.removePhoto(selectedPhotoIndex!!)
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    selectedPhotoIndex = null
+                                }
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }
@@ -203,39 +254,21 @@ fun AddPhotoButtons(
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(vertical = dimensionResource(R.dimen.small_padding))) {
         Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))) {
-            Button(
+            IconAndTextButton(
+                icon = Icons.Default.ImageSearch,
+                text = stringResource(R.string.open_gallery),
                 onClick = onGalleryClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = dimensionResource(R.dimen.small_padding)),
-                shape = MaterialTheme.shapes.small
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.ImageSearch,
-                        contentDescription = stringResource(R.string.select_from_gallery)
-                    )
+                modifier = Modifier.weight(1f)
+            )
 
-                    Text(stringResource(R.string.select_from_gallery))
-                }
-            }
-
-            Button(
+            IconAndTextButton(
+                icon = Icons.Default.CameraAlt,
+                text = stringResource(R.string.take_photo),
                 onClick = onCameraClick,
-                modifier = Modifier.weight(1f),
-                shape = MaterialTheme.shapes.small
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.CameraAlt,
-                        contentDescription = stringResource(R.string.take_photo)
-                    )
-
-                    Text(stringResource(R.string.take_photo))
-                }
-            }
+                modifier = Modifier.weight(1f)
+            )
         }
 
         Button(
@@ -243,8 +276,63 @@ fun AddPhotoButtons(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small
         ) {
-            Text("Next")
+            Text(stringResource(R.string.next))
         }
+    }
+}
+
+@Composable
+fun IconAndTextButton(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.small_padding))
+        ) {
+            Icon(
+                icon,
+                contentDescription = text,
+                modifier = Modifier.padding(end = dimensionResource(R.dimen.small_padding))
+            )
+
+            Text(text)
+        }
+    }
+}
+
+@Composable
+fun BottomSheetOption(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(
+                horizontal = dimensionResource(R.dimen.medium_padding),
+                vertical = dimensionResource(R.dimen.large_padding)
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            icon,
+            contentDescription = text,
+            modifier = Modifier.padding(end = dimensionResource(R.dimen.large_padding)),
+            tint = Color.Black
+        )
+
+        Text(text, style = MaterialTheme.typography.displayMedium, color = Color.Black)
     }
 }
 
