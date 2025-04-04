@@ -70,7 +70,7 @@ class PhotoSelectViewModel(
         }
     }
 
-    fun updatePhoto(index: Int, photoUri: Uri) {
+    private fun updatePhoto(index: Int, photoUri: Uri) {
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.slice(0..<index).plus(photoUri)

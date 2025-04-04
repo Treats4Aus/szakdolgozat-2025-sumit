@@ -86,8 +86,8 @@ fun PhotoSelectScreen(
     val cropState = viewModel.imageCropper.cropState
 
     val pickMediaLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            if (uri != null) {
+        rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
+            uris.forEach { uri ->
                 Log.d(TAG, "Selected URI: $uri")
                 viewModel.addPhoto(uri)
             }
