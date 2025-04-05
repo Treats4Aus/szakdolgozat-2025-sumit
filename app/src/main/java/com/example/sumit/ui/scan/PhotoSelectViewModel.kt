@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ItemPosition
 import java.io.File
 import java.util.UUID
 
@@ -86,6 +87,16 @@ class PhotoSelectViewModel(
                 photos = currentState.photos.slice(0..<index)
                         + currentState.photos.slice((index + 1)..<(currentState.photos.size)),
                 selectedPhotoIndex = null
+            )
+        }
+    }
+
+    fun movePhoto(from: ItemPosition, to: ItemPosition) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                photos = currentState.photos.toMutableList().apply {
+                    add(to.index, removeAt(from.index))
+                }
             )
         }
     }

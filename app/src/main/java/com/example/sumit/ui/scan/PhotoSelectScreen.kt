@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -57,6 +59,11 @@ import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.navigation.NavigationDestination
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ItemPosition
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
+import org.burnoutcrew.reorderable.reorderable
 
 private const val TAG = "PhotoSelectScreen"
 
@@ -133,6 +140,9 @@ fun PhotoSelectScreen(
             PhotoGrid(
                 photos = uiState.photos,
                 onSelect = { viewModel.selectPhoto(it) },
+                onMove = { from, to ->
+                    viewModel.movePhoto(from, to)
+                },
                 modifier = Modifier.weight(1f)
             )
 
@@ -209,21 +219,32 @@ fun PhotoSelectScreen(
 fun PhotoGrid(
     photos: List<Uri>,
     onSelect: (Int) -> Unit,
+    onMove: (ItemPosition, ItemPosition) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val state = rememberReorderableLazyGridState(onMove = onMove)
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = dimensionResource(R.dimen.photo_grid_min_width)),
-        modifier = modifier,
+        modifier = modifier.reorderable(state = state),
+        state = state.gridState,
         contentPadding = PaddingValues(vertical = dimensionResource(R.dimen.medium_padding)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding)),
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
     ) {
         itemsIndexed(photos) { index, photo ->
-            NotePhoto(
-                photo = photo,
-                index = index,
-                onClick = onSelect
-            )
+            ReorderableItem(state = state, key = photo) { isDragging ->
+                val elevation = animateDpAsState(if (isDragging) 8.dp else 0.dp)
+
+                NotePhoto(
+                    photo = photo,
+                    index = index,
+                    onClick = onSelect,
+                    modifier = Modifier
+                        .detectReorderAfterLongPress(state)
+                        .shadow(elevation.value)
+                )
+            }
         }
 
         if (photos.isEmpty()) {
