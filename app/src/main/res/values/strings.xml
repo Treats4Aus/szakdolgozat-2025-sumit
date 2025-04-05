@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">SumIt</string>
     <string name="home">Home</string>
+
     <string name="select_photos">Select photos</string>
     <string name="take_photo">Take photo</string>
     <string name="select_from_gallery">Select from gallery</string>
@@ -10,4 +11,6 @@
     <string name="image_number">Image number %1$d</string>
     <string name="crop_image">Crop image</string>
     <string name="delete_image">Delete image</string>
+
+    <string name="extract_text">Extract text</string>
 </resources>

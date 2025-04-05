@@ -79,6 +79,7 @@ object PhotoSelectDestination : NavigationDestination {
 @Composable
 fun PhotoSelectScreen(
     onCancel: () -> Unit,
+    onNextStep: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PhotoSelectViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -157,7 +158,10 @@ fun PhotoSelectScreen(
                 onCameraClick = {
                     viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
                 },
-                onContinueClick = viewModel::savePhotosToTemp
+                onContinueClick = {
+                    viewModel.savePhotosToTemp()
+                    onNextStep()
+                }
             )
         }
 
@@ -402,5 +406,5 @@ fun BottomSheetOption(
 @Preview
 @Composable
 private fun PhotoSelectScreenPreview() {
-    PhotoSelectScreen(onCancel = { })
+    PhotoSelectScreen(onCancel = { }, onNextStep = { })
 }

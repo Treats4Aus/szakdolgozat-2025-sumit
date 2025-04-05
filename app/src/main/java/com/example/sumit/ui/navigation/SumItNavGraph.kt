@@ -3,7 +3,6 @@ package com.example.sumit.ui.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -15,8 +14,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.sumit.ui.home.HomeDestination
 import com.example.sumit.ui.home.HomeScreen
+import com.example.sumit.ui.scan.PhotoSegmentDestination
+import com.example.sumit.ui.scan.PhotoSegmentScreen
 import com.example.sumit.ui.scan.PhotoSelectDestination
 import com.example.sumit.ui.scan.PhotoSelectScreen
+
+private const val SLIDE_DURATION = 400
 
 @Composable
 fun SumItNavHost(
@@ -27,8 +30,20 @@ fun SumItNavHost(
         navController = navController,
         startDestination = HomeDestination.route,
         modifier = modifier,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None }
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Start,
+                tween(SLIDE_DURATION, easing = EaseOut)
+            )
+        },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.End,
+                tween(SLIDE_DURATION, easing = EaseOut)
+            )
+        }
     ) {
         composable(route = HomeDestination.route) {
             HomeScreen(onNewScan = {
@@ -40,21 +55,16 @@ fun SumItNavHost(
             route = PhotoSelectDestination.routeWithArgs,
             arguments = listOf(navArgument(PhotoSelectDestination.selectModeArg) {
                 type = NavType.BoolType
-            }),
-            enterTransition = {
-                slideIntoContainer(
-                    animationSpec = tween(300, easing = EaseIn),
-                    towards = AnimatedContentTransitionScope.SlideDirection.Start
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End
-                )
-            }
+            })
         ) {
-            PhotoSelectScreen(onCancel = { navController.navigateUp() })
+            PhotoSelectScreen(
+                onCancel = { navController.navigateUp() },
+                onNextStep = { navController.navigate(PhotoSegmentDestination.route) }
+            )
+        }
+
+        composable(route = PhotoSegmentDestination.route) {
+            PhotoSegmentScreen(onCancel = { navController.navigateUp() })
         }
     }
 }
