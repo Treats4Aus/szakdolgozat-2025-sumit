@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.burnoutcrew.reorderable.ItemPosition
 import java.io.File
 import java.util.UUID
 
@@ -45,7 +45,7 @@ class PhotoSelectViewModel(
     fun addPhoto(photoUri: Uri) {
         _uiState.update { currentState ->
             currentState.copy(
-                photos = currentState.photos.plus(photoUri)
+                photos = currentState.photos.plus(Photo(uri = photoUri))
             )
         }
     }
@@ -54,7 +54,7 @@ class PhotoSelectViewModel(
 
     fun cropPhoto(index: Int, context: Context) {
         viewModelScope.launch {
-            val result = imageCropper.crop(_uiState.value.photos[index], context)
+            val result = imageCropper.crop(_uiState.value.photos[index].uri, context)
             if (result is CropResult.Success) {
                 val croppedPhotoUri = FileProvider.getUriForFile(
                     context,
@@ -76,7 +76,7 @@ class PhotoSelectViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.toMutableList().apply {
-                    set(index, photoUri)
+                    set(index, Photo(currentState.photos[index].id, photoUri))
                 }
             )
         }
@@ -93,7 +93,7 @@ class PhotoSelectViewModel(
         }
     }
 
-    fun movePhoto(from: ItemPosition, to: ItemPosition) {
+    fun movePhoto(from: LazyGridItemInfo, to: LazyGridItemInfo) {
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.toMutableList().apply {
@@ -104,7 +104,7 @@ class PhotoSelectViewModel(
     }
 
     fun savePhotosToTemp() {
-        photosRepository.movePhotosToTemp(_uiState.value.photos)
+        photosRepository.movePhotosToTemp(_uiState.value.photos.map { it.uri })
     }
 
     fun checkCameraPermission(
@@ -171,8 +171,13 @@ fun Context.createImageFile(): File {
 }
 
 data class PhotoSelectUiState(
-    val photos: List<Uri> = listOf(),
+    val photos: List<Photo> = listOf(),
     val cameraPhotoUri: Uri = Uri.EMPTY,
     val useCamera: Boolean? = false,
     val selectedPhotoIndex: Int? = null
+)
+
+data class Photo(
+    val id: UUID = UUID.randomUUID(),
+    val uri: Uri
 )

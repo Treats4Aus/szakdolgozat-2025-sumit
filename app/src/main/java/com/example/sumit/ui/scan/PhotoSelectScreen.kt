@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Crop
@@ -47,10 +49,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.HapticFeedbackConstantsCompat
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.sumit.R
@@ -59,11 +64,8 @@ import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.navigation.NavigationDestination
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
-import org.burnoutcrew.reorderable.ItemPosition
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyGridState
 
 private const val TAG = "PhotoSelectScreen"
 
@@ -139,10 +141,8 @@ fun PhotoSelectScreen(
         ) {
             PhotoGrid(
                 photos = uiState.photos,
-                onSelect = { viewModel.selectPhoto(it) },
-                onMove = { from, to ->
-                    viewModel.movePhoto(from, to)
-                },
+                onSelect = viewModel::selectPhoto,
+                onMove = viewModel::movePhoto,
                 modifier = Modifier.weight(1f)
             )
 
@@ -175,7 +175,7 @@ fun PhotoSelectScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AsyncImage(
-                        model = uiState.photos[uiState.selectedPhotoIndex!!],
+                        model = uiState.photos[uiState.selectedPhotoIndex!!].uri,
                         contentDescription = stringResource(
                             R.string.image_number,
                             uiState.selectedPhotoIndex!!
@@ -217,32 +217,58 @@ fun PhotoSelectScreen(
 
 @Composable
 fun PhotoGrid(
-    photos: List<Uri>,
+    photos: List<Photo>,
     onSelect: (Int) -> Unit,
-    onMove: (ItemPosition, ItemPosition) -> Unit,
+    onMove: (LazyGridItemInfo, LazyGridItemInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val state = rememberReorderableLazyGridState(onMove = onMove)
+    val view = LocalView.current
+
+    val lazyGridState = rememberLazyGridState()
+    val reorderableLazyGridState = rememberReorderableLazyGridState(lazyGridState) { from, to ->
+        onMove(from, to)
+
+        ViewCompat.performHapticFeedback(
+            view,
+            HapticFeedbackConstantsCompat.SEGMENT_FREQUENT_TICK
+        )
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = dimensionResource(R.dimen.photo_grid_min_width)),
-        modifier = modifier.reorderable(state = state),
-        state = state.gridState,
+        modifier = modifier,
+        state = lazyGridState,
         contentPadding = PaddingValues(vertical = dimensionResource(R.dimen.medium_padding)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding)),
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
     ) {
-        itemsIndexed(photos) { index, photo ->
-            ReorderableItem(state = state, key = photo) { isDragging ->
-                val elevation = animateDpAsState(if (isDragging) 8.dp else 0.dp)
+        itemsIndexed(photos, key = { _, photo -> photo.id }) { index, photo ->
+            ReorderableItem(
+                state = reorderableLazyGridState,
+                key = photo.id
+            ) { isDragging ->
+                val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
                 NotePhoto(
-                    photo = photo,
+                    photo = photo.uri,
                     index = index,
                     onClick = onSelect,
                     modifier = Modifier
-                        .detectReorderAfterLongPress(state)
-                        .shadow(elevation.value)
+                        .shadow(elevation)
+                        .longPressDraggableHandle(
+                            onDragStarted = {
+                                ViewCompat.performHapticFeedback(
+                                    view,
+                                    HapticFeedbackConstantsCompat.GESTURE_START
+                                )
+                            },
+                            onDragStopped = {
+                                ViewCompat.performHapticFeedback(
+                                    view,
+                                    HapticFeedbackConstantsCompat.GESTURE_END
+                                )
+                            }
+                        )
                 )
             }
         }
