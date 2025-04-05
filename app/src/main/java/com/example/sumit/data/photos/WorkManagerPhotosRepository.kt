@@ -8,6 +8,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
@@ -25,9 +26,9 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
             OneTimeWorkRequest.Companion.from(CleanupWorker::class.java)
         )
 
-        val savePhotoWorkers = photoUris.map {
+        val savePhotoWorkers = photoUris.mapIndexed { index, photo ->
             val builder = OneTimeWorkRequestBuilder<SavePhotoToTempWorker>()
-            builder.setInputData(createInputDataForWorkRequest(it)).build()
+            builder.setInputData(createInputDataForWorkRequest(index, photo)).build()
         }
         continuation = continuation.then(savePhotoWorkers)
 
@@ -54,8 +55,9 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         workManager.cancelUniqueWork(SAVE_PHOTOS_WORK_NAME)
     }
 
-    private fun createInputDataForWorkRequest(photoUri: Uri): Data {
+    private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
         val builder = Data.Builder()
+        builder.putInt(KEY_PHOTO_INDEX, index)
         builder.putString(KEY_PHOTO_URI, photoUri.toString())
         return builder.build()
     }

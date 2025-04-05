@@ -9,7 +9,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.UUID
 
 private const val TAG = "WorkerUtils"
 
@@ -21,8 +20,8 @@ private const val TAG = "WorkerUtils"
  * @throws FileNotFoundException Throws if bitmap file cannot be found
  */
 @Throws(FileNotFoundException::class)
-fun writeBitmapToFile(applicationContext: Context, bitmap: Bitmap): Uri {
-    val name = String.format("temp-photo-%s.png", UUID.randomUUID().toString())
+fun writeBitmapToFile(applicationContext: Context, bitmap: Bitmap, index: Int): Uri {
+    val name = "temp-photo-${index.toString().padStart(3, '0')}.png"
     val outputDir = File(applicationContext.filesDir, OUTPUT_PATH)
     if (!outputDir.exists()) {
         outputDir.mkdirs() // should succeed

@@ -75,8 +75,9 @@ class PhotoSelectViewModel(
     private fun updatePhoto(index: Int, photoUri: Uri) {
         _uiState.update { currentState ->
             currentState.copy(
-                photos = currentState.photos.slice(0..<index).plus(photoUri)
-                        + currentState.photos.slice((index + 1)..<(currentState.photos.size))
+                photos = currentState.photos.toMutableList().apply {
+                    set(index, photoUri)
+                }
             )
         }
     }
@@ -84,8 +85,9 @@ class PhotoSelectViewModel(
     fun removePhoto(index: Int) {
         _uiState.update { currentState ->
             currentState.copy(
-                photos = currentState.photos.slice(0..<index)
-                        + currentState.photos.slice((index + 1)..<(currentState.photos.size)),
+                photos = currentState.photos.toMutableList().apply {
+                    removeAt(index)
+                },
                 selectedPhotoIndex = null
             )
         }
