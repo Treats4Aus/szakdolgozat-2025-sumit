@@ -13,6 +13,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.photos.PhotosRepository
+import com.example.sumit.utils.OUTPUT_PATH
 import com.mr0xf00.easycrop.CropResult
 import com.mr0xf00.easycrop.ImageCropper
 import com.mr0xf00.easycrop.crop
@@ -83,7 +84,8 @@ class PhotoSelectViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.slice(0..<index)
-                        + currentState.photos.slice((index + 1)..<(currentState.photos.size))
+                        + currentState.photos.slice((index + 1)..<(currentState.photos.size)),
+                selectedPhotoIndex = null
             )
         }
     }
@@ -126,17 +128,38 @@ class PhotoSelectViewModel(
             )
         }
     }
+
+    fun selectPhoto(index: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedPhotoIndex = index
+            )
+        }
+    }
+
+    fun clearSelectedPhoto() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedPhotoIndex = null
+            )
+        }
+    }
 }
 
 fun Context.createImageFile(): File {
     val name = String.format("temp-photo-%s", UUID.randomUUID().toString())
     val extension = ".png"
-    val image = File.createTempFile(name, extension, cacheDir)
+    val outputDir = File(cacheDir, OUTPUT_PATH)
+    if (!outputDir.exists()) {
+        outputDir.mkdirs()
+    }
+    val image = File.createTempFile(name, extension, outputDir)
     return image
 }
 
 data class PhotoSelectUiState(
     val photos: List<Uri> = listOf(),
     val cameraPhotoUri: Uri = Uri.EMPTY,
-    val useCamera: Boolean? = false
+    val useCamera: Boolean? = false,
+    val selectedPhotoIndex: Int? = null
 )

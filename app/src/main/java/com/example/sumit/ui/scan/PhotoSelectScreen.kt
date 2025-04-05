@@ -37,10 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,8 +77,7 @@ fun PhotoSelectScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState()
-    var selectedPhotoIndex by remember { mutableStateOf<Int?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val cropState = viewModel.imageCropper.cropState
 
@@ -136,7 +132,7 @@ fun PhotoSelectScreen(
         ) {
             PhotoGrid(
                 photos = uiState.photos,
-                onDelete = { selectedPhotoIndex = it },
+                onSelect = { viewModel.selectPhoto(it) },
                 modifier = Modifier.weight(1f)
             )
 
@@ -159,20 +155,31 @@ fun PhotoSelectScreen(
             ImageCropperDialog(state = cropState)
         }
 
-        if (selectedPhotoIndex != null) {
+        if (uiState.selectedPhotoIndex != null) {
             ModalBottomSheet(
-                onDismissRequest = { selectedPhotoIndex = null },
+                onDismissRequest = viewModel::clearSelectedPhoto,
                 sheetState = sheetState
             ) {
-                Column(modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))) {
+                Column(
+                    modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding)),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AsyncImage(
+                        model = uiState.photos[uiState.selectedPhotoIndex!!],
+                        contentDescription = stringResource(
+                            R.string.image_number,
+                            uiState.selectedPhotoIndex!!
+                        )
+                    )
+
                     BottomSheetOption(
                         icon = Icons.Default.Crop,
                         text = stringResource(R.string.crop_image),
                         onClick = {
-                            viewModel.cropPhoto(selectedPhotoIndex!!, context)
+                            viewModel.cropPhoto(uiState.selectedPhotoIndex!!, context)
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {
-                                    selectedPhotoIndex = null
+                                    viewModel.clearSelectedPhoto()
                                 }
                             }
                         }
@@ -184,10 +191,10 @@ fun PhotoSelectScreen(
                         icon = Icons.Default.Delete,
                         text = stringResource(R.string.delete_image),
                         onClick = {
-                            viewModel.removePhoto(selectedPhotoIndex!!)
+                            viewModel.removePhoto(uiState.selectedPhotoIndex!!)
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {
-                                    selectedPhotoIndex = null
+                                    viewModel.clearSelectedPhoto()
                                 }
                             }
                         }
@@ -201,7 +208,7 @@ fun PhotoSelectScreen(
 @Composable
 fun PhotoGrid(
     photos: List<Uri>,
-    onDelete: (Int) -> Unit,
+    onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -215,7 +222,7 @@ fun PhotoGrid(
             NotePhoto(
                 photo = photo,
                 index = index,
-                onClick = onDelete
+                onClick = onSelect
             )
         }
 
