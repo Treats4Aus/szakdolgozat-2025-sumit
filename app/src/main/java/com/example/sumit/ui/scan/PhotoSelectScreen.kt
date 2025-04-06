@@ -5,9 +5,13 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
@@ -42,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -144,13 +150,14 @@ fun PhotoSelectScreen(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = dimensionResource(R.dimen.medium_padding)),
+                .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            Column(modifier = modifier.fillMaxSize()) {
-                Text(uiState.savePhotosState.name)
-
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = dimensionResource(R.dimen.medium_padding))
+            ) {
                 PhotoGrid(
                     photos = uiState.photos,
                     onSelect = viewModel::selectPhoto,
@@ -176,15 +183,26 @@ fun PhotoSelectScreen(
                 )
             }
 
-            if (uiState.savePhotosState == SavePhotosState.Loading) {
+            AnimatedVisibility(
+                visible = uiState.savePhotosState == SavePhotosState.Loading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                val interactionSource = remember { MutableInteractionSource() }
+
                 Box(
-                    modifier = Modifier.background(Color.Gray.copy(alpha = 0.5f))
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Gray.copy(alpha = 0.3f))
+                        .clickable(interactionSource = interactionSource, indication = null) { },
+                    contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.width(dimensionResource(R.dimen.progress_indicator_size))
+                    )
                 }
             }
         }
-
 
         if (cropState != null) {
             ImageCropperDialog(state = cropState)
