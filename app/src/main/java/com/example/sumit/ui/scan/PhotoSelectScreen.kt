@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -113,7 +115,12 @@ fun PhotoSelectScreen(
             }
         }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(uiState.savePhotosState) {
+        if (uiState.savePhotosState == SavePhotosState.Complete) {
+            viewModel.resetSavePhotoState()
+            onNextStep()
+        }
+
         if (uiState.useCamera != null) {
             if (uiState.useCamera == true) {
                 viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
@@ -134,36 +141,50 @@ fun PhotoSelectScreen(
             )
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = dimensionResource(R.dimen.medium_padding))
+                .padding(horizontal = dimensionResource(R.dimen.medium_padding)),
+            contentAlignment = Alignment.Center
         ) {
-            PhotoGrid(
-                photos = uiState.photos,
-                onSelect = viewModel::selectPhoto,
-                onMove = viewModel::movePhoto,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = modifier.fillMaxSize()) {
+                Text(uiState.savePhotosState.name)
 
-            AddPhotoButtons(
-                onGalleryClick = {
-                    pickMediaLauncher.launch(
-                        PickVisualMediaRequest(
-                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                PhotoGrid(
+                    photos = uiState.photos,
+                    onSelect = viewModel::selectPhoto,
+                    onMove = viewModel::movePhoto,
+                    modifier = Modifier.weight(1f)
+                )
+
+                AddPhotoButtons(
+                    canContinue = uiState.photos.isNotEmpty(),
+                    onGalleryClick = {
+                        pickMediaLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
-                    )
-                },
-                onCameraClick = {
-                    viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
-                },
-                onContinueClick = {
-                    viewModel.savePhotosToTemp()
-                    onNextStep()
+                    },
+                    onCameraClick = {
+                        viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+                    },
+                    onContinueClick = {
+                        viewModel.savePhotosToTemp()
+                    }
+                )
+            }
+
+            if (uiState.savePhotosState == SavePhotosState.Loading) {
+                Box(
+                    modifier = Modifier.background(Color.Gray.copy(alpha = 0.5f))
+                ) {
+                    CircularProgressIndicator()
                 }
-            )
+            }
         }
+
 
         if (cropState != null) {
             ImageCropperDialog(state = cropState)
@@ -316,6 +337,7 @@ fun NoNotePhotos(modifier: Modifier = Modifier) {
 
 @Composable
 fun AddPhotoButtons(
+    canContinue: Boolean,
     onGalleryClick: () -> Unit,
     onCameraClick: () -> Unit,
     onContinueClick: () -> Unit,
@@ -341,6 +363,7 @@ fun AddPhotoButtons(
         Button(
             onClick = onContinueClick,
             modifier = Modifier.fillMaxWidth(),
+            enabled = canContinue,
             shape = MaterialTheme.shapes.small
         ) {
             Text(stringResource(R.string.next))

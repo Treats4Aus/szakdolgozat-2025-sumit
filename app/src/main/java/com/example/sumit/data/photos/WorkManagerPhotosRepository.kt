@@ -7,17 +7,26 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
+import com.example.sumit.utils.TAG_OUTPUT
 import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import java.io.File
+
+private const val TAG = "PhotosRepository"
 
 class WorkManagerPhotosRepository(private val context: Context) : PhotosRepository {
     private val workManager = WorkManager.getInstance(context)
+
+    override val movePhotosWorkData: Flow<List<WorkInfo>> =
+        workManager.getWorkInfosByTagFlow(TAG_OUTPUT).filter { it.isNotEmpty() }
 
     override fun movePhotosToTemp(photoUris: List<Uri>) {
         var continuation = workManager.beginUniqueWork(
@@ -28,7 +37,10 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
 
         val savePhotoWorkers = photoUris.mapIndexed { index, photo ->
             val builder = OneTimeWorkRequestBuilder<SavePhotoToTempWorker>()
-            builder.setInputData(createInputDataForWorkRequest(index, photo)).build()
+            builder
+                .addTag(TAG_OUTPUT)
+                .setInputData(createInputDataForWorkRequest(index, photo))
+                .build()
         }
         continuation = continuation.then(savePhotoWorkers)
 

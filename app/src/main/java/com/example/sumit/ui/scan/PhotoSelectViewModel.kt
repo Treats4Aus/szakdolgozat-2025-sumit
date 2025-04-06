@@ -13,6 +13,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
 import com.example.sumit.data.photos.PhotosRepository
 import com.example.sumit.utils.OUTPUT_PATH
 import com.mr0xf00.easycrop.CropResult
@@ -24,6 +25,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
+
+private const val TAG = "PhotoSelectViewModel"
 
 class PhotoSelectViewModel(
     private val photosRepository: PhotosRepository,
@@ -39,6 +42,15 @@ class PhotoSelectViewModel(
             currentState.copy(
                 useCamera = checkNotNull(savedStateHandle[PhotoSelectDestination.selectModeArg])
             )
+        }
+
+        viewModelScope.launch {
+            photosRepository.movePhotosWorkData.collect { infos ->
+                if (infos.all { it.state == WorkInfo.State.SUCCEEDED }
+                    && _uiState.value.savePhotosState == SavePhotosState.Loading) {
+                    setPhotoState(SavePhotosState.Complete)
+                }
+            }
         }
     }
 
@@ -104,7 +116,18 @@ class PhotoSelectViewModel(
     }
 
     fun savePhotosToTemp() {
+        setPhotoState(SavePhotosState.Loading)
         photosRepository.movePhotosToTemp(_uiState.value.photos.map { it.uri })
+    }
+
+    fun resetSavePhotoState() = setPhotoState(SavePhotosState.Default)
+
+    private fun setPhotoState(state: SavePhotosState) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                savePhotosState = state
+            )
+        }
     }
 
     fun checkCameraPermission(
@@ -174,10 +197,17 @@ data class PhotoSelectUiState(
     val photos: List<Photo> = listOf(),
     val cameraPhotoUri: Uri = Uri.EMPTY,
     val useCamera: Boolean? = false,
-    val selectedPhotoIndex: Int? = null
+    val selectedPhotoIndex: Int? = null,
+    val savePhotosState: SavePhotosState = SavePhotosState.Default
 )
 
 data class Photo(
     val id: UUID = UUID.randomUUID(),
     val uri: Uri
 )
+
+enum class SavePhotosState {
+    Default,
+    Loading,
+    Complete
+}

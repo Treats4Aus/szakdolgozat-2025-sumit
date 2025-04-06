@@ -10,6 +10,7 @@ import androidx.work.workDataOf
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 private const val TAG = "SavePhotoToTempWorker"
@@ -21,6 +22,8 @@ class SavePhotoToTempWorker(ctx: Context, params: WorkerParameters) :
         val photoUri = inputData.getString(KEY_PHOTO_URI)
 
         return withContext(Dispatchers.IO) {
+            delay(2000)
+
             return@withContext try {
                 require(!photoUri.isNullOrBlank()) {
                     val errorMessage = "Invalid input uri"
