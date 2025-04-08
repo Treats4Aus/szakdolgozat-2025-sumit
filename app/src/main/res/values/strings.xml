@@ -8,7 +8,7 @@
     <string name="open_gallery">Open gallery</string>
     <string name="next">Next</string>
     <string name="no_photos_selected">No photos selected</string>
-    <string name="image_number">Image number %1$d</string>
+    <string name="photo_number">Image number %1$d</string>
     <string name="crop_image">Crop image</string>
     <string name="delete_image">Delete image</string>
 

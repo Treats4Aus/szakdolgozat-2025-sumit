@@ -64,7 +64,7 @@ fun SumItNavHost(
         }
 
         composable(route = PhotoSegmentDestination.route) {
-            PhotoSegmentScreen(onCancel = { navController.navigateUp() })
+            PhotoSegmentScreen(onCancel = { navController.navigateUp() }, onNextStep = { })
         }
     }
 }

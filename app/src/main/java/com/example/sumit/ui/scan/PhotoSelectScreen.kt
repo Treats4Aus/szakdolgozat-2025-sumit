@@ -154,7 +154,7 @@ fun PhotoSelectScreen(
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = dimensionResource(R.dimen.medium_padding))
             ) {
@@ -220,7 +220,7 @@ fun PhotoSelectScreen(
                     AsyncImage(
                         model = uiState.photos[uiState.selectedPhotoIndex!!].uri,
                         contentDescription = stringResource(
-                            R.string.image_number,
+                            R.string.photo_number,
                             uiState.selectedPhotoIndex!!
                         )
                     )
@@ -333,7 +333,7 @@ fun NotePhoto(
 ) {
     AsyncImage(
         model = photo,
-        contentDescription = stringResource(R.string.image_number, index),
+        contentDescription = stringResource(R.string.photo_number, index),
         modifier = modifier
             .aspectRatio(1f)
             .clip(MaterialTheme.shapes.small)
