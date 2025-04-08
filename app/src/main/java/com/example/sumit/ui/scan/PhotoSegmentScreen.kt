@@ -1,6 +1,10 @@
 package com.example.sumit.ui.scan
 
+import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +33,7 @@ import coil.compose.AsyncImage
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
+import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.navigation.NavigationDestination
 
 object PhotoSegmentDestination : NavigationDestination {
@@ -97,14 +102,44 @@ fun PhotoList(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
     ) {
         itemsIndexed(photos) { index, photo ->
-            AsyncImage(
-                model = photo,
-                contentDescription = stringResource(R.string.photo_number, index),
+            SegmentedPhoto(
+                segmentedPhotoPreview = null,
+                originalPhoto = photo,
+                index = index,
+                onClick = onSelect,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .clip(MaterialTheme.shapes.small)
-                    .clickable { onSelect(index) },
-                contentScale = ContentScale.FillWidth
+            )
+        }
+    }
+}
+
+@Composable
+fun SegmentedPhoto(
+    segmentedPhotoPreview: Bitmap?,
+    originalPhoto: Uri,
+    index: Int,
+    onClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        AsyncImage(
+            model = segmentedPhotoPreview ?: originalPhoto,
+            contentDescription = stringResource(R.string.photo_number, index),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick(index) },
+            contentScale = ContentScale.FillWidth
+        )
+
+        AnimatedVisibility(
+            visible = segmentedPhotoPreview == null,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            CircularLoadingScreenWithBackdrop(
+                indicatorSize = dimensionResource(R.dimen.progress_indicator_size)
             )
         }
     }
