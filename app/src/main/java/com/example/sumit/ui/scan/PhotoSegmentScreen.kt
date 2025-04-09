@@ -107,9 +107,7 @@ fun PhotoList(
                 originalPhoto = photo,
                 index = index,
                 onClick = onSelect,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(MaterialTheme.shapes.small)
+                modifier = Modifier.clip(MaterialTheme.shapes.small)
             )
         }
     }
@@ -135,6 +133,7 @@ fun SegmentedPhoto(
 
         AnimatedVisibility(
             visible = segmentedPhotoPreview == null,
+            modifier = Modifier.matchParentSize(),
             enter = fadeIn(),
             exit = fadeOut()
         ) {
