@@ -92,7 +92,7 @@ fun PhotoSegmentScreen(
 
 @Composable
 fun PhotoList(
-    photos: List<Uri>,
+    photos: List<SegmentedPhoto>,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -103,8 +103,8 @@ fun PhotoList(
     ) {
         itemsIndexed(photos) { index, photo ->
             SegmentedPhoto(
-                segmentedPhotoPreview = null,
-                originalPhoto = photo,
+                segmentedPhotoPreview = photo.segmented,
+                originalPhoto = photo.original,
                 index = index,
                 onClick = onSelect,
                 modifier = Modifier.clip(MaterialTheme.shapes.small)

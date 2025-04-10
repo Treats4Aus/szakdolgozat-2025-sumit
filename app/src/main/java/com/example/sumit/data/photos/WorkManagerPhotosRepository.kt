@@ -13,9 +13,11 @@ import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
-import com.example.sumit.utils.TAG_OUTPUT
+import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
+import com.example.sumit.utils.TAG_SEGMENT_PHOTO_OUTPUT
 import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
+import com.example.sumit.workers.SegmentPhotoWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import java.io.File
@@ -26,7 +28,10 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
     private val workManager = WorkManager.getInstance(context)
 
     override val movePhotosWorkData: Flow<List<WorkInfo>> =
-        workManager.getWorkInfosByTagFlow(TAG_OUTPUT).filter { it.isNotEmpty() }
+        workManager.getWorkInfosByTagFlow(TAG_SAVE_PHOTO_OUTPUT).filter { it.isNotEmpty() }
+
+    override val segmentPhotosWorkData: Flow<List<WorkInfo>> =
+        workManager.getWorkInfosByTagFlow(TAG_SEGMENT_PHOTO_OUTPUT)
 
     override fun movePhotosToTemp(photoUris: List<Uri>) {
         var continuation = workManager.beginUniqueWork(
@@ -38,7 +43,7 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         val savePhotoWorkers = photoUris.mapIndexed { index, photo ->
             val builder = OneTimeWorkRequestBuilder<SavePhotoToTempWorker>()
             builder
-                .addTag(TAG_OUTPUT)
+                .addTag(TAG_SAVE_PHOTO_OUTPUT)
                 .setInputData(createInputDataForWorkRequest(index, photo))
                 .build()
         }
@@ -65,6 +70,17 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
 
     override fun cancelWork() {
         workManager.cancelUniqueWork(SAVE_PHOTOS_WORK_NAME)
+    }
+
+    override fun startSegmentation(photoUris: List<Uri>) {
+        val segmentPhotoWorkers = photoUris.mapIndexed { index, photo ->
+            val builder = OneTimeWorkRequestBuilder<SegmentPhotoWorker>()
+            builder
+                .addTag(TAG_SEGMENT_PHOTO_OUTPUT)
+                .setInputData(createInputDataForWorkRequest(index, photo))
+                .build()
+        }
+        workManager.enqueue(segmentPhotoWorkers)
     }
 
     private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
