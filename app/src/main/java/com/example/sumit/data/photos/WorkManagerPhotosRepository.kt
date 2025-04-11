@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
+import com.example.sumit.utils.PHOTO_TYPE_TEMP
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
 import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
 import com.example.sumit.utils.TAG_SEGMENT_PHOTO_OUTPUT
@@ -60,7 +61,7 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
                 return entries
                     .filter {
                         val name = it.name
-                        name.isNotEmpty() && name.endsWith(".png")
+                        name.isNotEmpty() && name.startsWith(PHOTO_TYPE_TEMP) && name.endsWith(".png")
                     }
                     .map { it.toUri() }
             }

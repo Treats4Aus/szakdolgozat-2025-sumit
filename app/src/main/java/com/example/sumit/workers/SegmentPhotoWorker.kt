@@ -12,7 +12,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
-import com.example.sumit.utils.KEY_SEGMENTED_BITMAP
+import com.example.sumit.utils.PHOTO_TYPE_SEGMENTED
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -45,11 +45,18 @@ class SegmentPhotoWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
                 val bradley = BradleyLocalThreshold()
                 bradley.applyInPlace(fb)
 
+                val outputUri = writeBitmapToFile(
+                    applicationContext,
+                    fb.toBitmap(),
+                    PHOTO_TYPE_SEGMENTED,
+                    photoIndex
+                )
+                Log.d(TAG, "Saved photo to $outputUri")
+
                 val outputData = workDataOf(
                     KEY_PHOTO_INDEX to photoIndex,
-                    KEY_SEGMENTED_BITMAP to fb.toBitmap()
+                    KEY_PHOTO_URI to outputUri.toString()
                 )
-                // TODO: bitmap to uri
                 Result.success(outputData)
             } catch (throwable: Throwable) {
                 Log.e(TAG, "Error segmenting photo", throwable)

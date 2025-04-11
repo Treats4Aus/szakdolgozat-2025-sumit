@@ -9,6 +9,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
+import com.example.sumit.utils.PHOTO_TYPE_TEMP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -33,7 +34,12 @@ class SavePhotoToTempWorker(ctx: Context, params: WorkerParameters) :
                     resolver.openInputStream(Uri.parse(photoUri))
                 )
 
-                val outputUri = writeBitmapToFile(applicationContext, photo, photoIndex)
+                val outputUri = writeBitmapToFile(
+                    applicationContext,
+                    photo,
+                    PHOTO_TYPE_TEMP,
+                    photoIndex
+                )
                 Log.d(TAG, "Saved photo to $outputUri")
 
                 val outputData = workDataOf(KEY_PHOTO_URI to outputUri.toString())

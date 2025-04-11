@@ -20,8 +20,8 @@ private const val TAG = "WorkerUtils"
  * @throws FileNotFoundException Throws if bitmap file cannot be found
  */
 @Throws(FileNotFoundException::class)
-fun writeBitmapToFile(applicationContext: Context, bitmap: Bitmap, index: Int): Uri {
-    val name = "temp-photo-${index.toString().padStart(3, '0')}.png"
+fun writeBitmapToFile(applicationContext: Context, bitmap: Bitmap, type: String, index: Int): Uri {
+    val name = "$type-photo-${index.toString().padStart(3, '0')}.png"
     val outputDir = File(applicationContext.filesDir, OUTPUT_PATH)
     if (!outputDir.exists()) {
         outputDir.mkdirs() // should succeed

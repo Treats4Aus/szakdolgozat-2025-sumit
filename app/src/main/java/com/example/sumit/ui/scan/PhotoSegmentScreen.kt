@@ -1,6 +1,5 @@
 package com.example.sumit.ui.scan
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -115,7 +114,7 @@ fun PhotoList(
 
 @Composable
 fun SegmentedPhoto(
-    segmentedPhotoPreview: Bitmap?,
+    segmentedPhotoPreview: Uri?,
     originalPhoto: Uri,
     index: Int,
     onClick: (Int) -> Unit,

@@ -1,13 +1,12 @@
 package com.example.sumit.ui.scan
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.photos.PhotosRepository
 import com.example.sumit.utils.KEY_PHOTO_INDEX
-import com.example.sumit.utils.KEY_SEGMENTED_BITMAP
+import com.example.sumit.utils.KEY_PHOTO_URI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -31,25 +30,25 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
             photosRepository.segmentPhotosWorkData.collect { infos ->
                 infos.forEach {
                     val index = it.outputData.getInt(KEY_PHOTO_INDEX, 0)
-                    val bitmap = it.outputData.keyValueMap[KEY_SEGMENTED_BITMAP] as Bitmap?
+                    val uri = it.outputData.getString(KEY_PHOTO_URI)
 
-                    Log.d(TAG, "index: $index isNull: ${bitmap == null}")
+                    Log.d(TAG, "index: $index isNull: ${uri == null}")
 
-                    if (it.state.isFinished && bitmap != null) {
-                        addSegmentedBitmap(index, bitmap)
+                    if (it.state.isFinished && uri != null) {
+                        addSegmentedBitmap(index, Uri.parse(uri))
                     }
                 }
             }
         }
     }
 
-    private fun addSegmentedBitmap(index: Int, segmentedPhoto: Bitmap) {
+    private fun addSegmentedBitmap(index: Int, segmentedPhotoUri: Uri) {
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.toMutableList().apply {
                     set(
                         index,
-                        SegmentedPhoto(segmentedPhoto, currentState.photos[index].original)
+                        SegmentedPhoto(segmentedPhotoUri, currentState.photos[index].original)
                     )
                 }
             )
@@ -62,6 +61,6 @@ data class PhotoSegmentUiState(
 )
 
 data class SegmentedPhoto(
-    val segmented: Bitmap? = null,
+    val segmented: Uri? = null,
     val original: Uri
 )
