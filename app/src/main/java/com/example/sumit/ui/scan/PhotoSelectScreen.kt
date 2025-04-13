@@ -106,7 +106,16 @@ fun PhotoSelectScreen(
     val cameraLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { photoTaken ->
             if (photoTaken) {
-                viewModel.addPhotoFromCamera()
+                val isUriValid = try {
+                    context.contentResolver.openInputStream(uiState.cameraPhotoUri).use {
+                        it != null && it.available() > 0
+                    }
+                } catch (ex: Exception) {
+                    false
+                }
+                if (isUriValid) {
+                    viewModel.addPhotoFromCamera()
+                }
             }
         }
 
