@@ -15,13 +15,14 @@ import com.example.sumit.utils.OUTPUT_PATH
 import com.example.sumit.utils.PHOTO_TYPE_TEMP
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
 import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
-import com.example.sumit.utils.TAG_SEGMENT_PHOTO_OUTPUT
 import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import java.io.File
+import java.util.UUID
 
 private const val TAG = "PhotosRepository"
 
@@ -30,9 +31,6 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
 
     override val movePhotosWorkData: Flow<List<WorkInfo>> =
         workManager.getWorkInfosByTagFlow(TAG_SAVE_PHOTO_OUTPUT).filter { it.isNotEmpty() }
-
-    override val segmentPhotosWorkData: Flow<List<WorkInfo>> =
-        workManager.getWorkInfosByTagFlow(TAG_SEGMENT_PHOTO_OUTPUT)
 
     override fun movePhotosToTemp(photoUris: List<Uri>) {
         var continuation = workManager.beginUniqueWork(
@@ -63,6 +61,7 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
                         val name = it.name
                         name.isNotEmpty() && name.startsWith(PHOTO_TYPE_TEMP) && name.endsWith(".png")
                     }
+                    .sortedBy { it.name }
                     .map { it.toUri() }
             }
         }
@@ -73,16 +72,17 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         workManager.cancelUniqueWork(SAVE_PHOTOS_WORK_NAME)
     }
 
-    override fun startSegmentation(photoUris: List<Uri>) {
-        val segmentPhotoWorkers = photoUris.mapIndexed { index, photo ->
-            val builder = OneTimeWorkRequestBuilder<SegmentPhotoWorker>()
-            builder
-                .addTag(TAG_SEGMENT_PHOTO_OUTPUT)
-                .setInputData(createInputDataForWorkRequest(index, photo))
-                .build()
-        }
-        workManager.enqueue(segmentPhotoWorkers)
+    override fun startSegmentation(index: Int, photoUri: Uri): UUID {
+        val builder = OneTimeWorkRequestBuilder<SegmentPhotoWorker>()
+        val segmentPhotoWorker = builder
+            .setInputData(createInputDataForWorkRequest(index, photoUri))
+            .build()
+        workManager.enqueue(segmentPhotoWorker)
+        return segmentPhotoWorker.id
     }
+
+    override fun getSegmentationWorkData(id: UUID): Flow<WorkInfo> =
+        workManager.getWorkInfoByIdFlow(id).filterNotNull()
 
     private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
         val builder = Data.Builder()

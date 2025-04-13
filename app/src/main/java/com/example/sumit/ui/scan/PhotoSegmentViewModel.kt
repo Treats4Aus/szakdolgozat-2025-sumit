@@ -1,11 +1,9 @@
 package com.example.sumit.ui.scan
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.photos.PhotosRepository
-import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,19 +21,18 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
             val photoUris = photosRepository.getTempPhotos()
             _uiState.update { currentState ->
                 currentState.copy(
-                    photos = photoUris.map { SegmentedPhoto(original = it) }
+                    photos = photoUris.map { SegmentedPhoto(uri = it, isProcessing = true) }
                 )
             }
-            photosRepository.startSegmentation(photoUris)
-            photosRepository.segmentPhotosWorkData.collect { infos ->
-                infos.forEach {
-                    val index = it.outputData.getInt(KEY_PHOTO_INDEX, 0)
-                    val uri = it.outputData.getString(KEY_PHOTO_URI)
+            photoUris.forEachIndexed { index, photo ->
+                val workerId = photosRepository.startSegmentation(index, photo)
+                launch {
+                    photosRepository.getSegmentationWorkData(workerId).collect { info ->
+                        val uri = info.outputData.getString(KEY_PHOTO_URI)
 
-                    Log.d(TAG, "index: $index isNull: ${uri == null}")
-
-                    if (it.state.isFinished && uri != null) {
-                        addSegmentedBitmap(index, Uri.parse(uri))
+                        if (info.state.isFinished && uri != null && _uiState.value.photos[index].isProcessing) {
+                            addSegmentedBitmap(index, Uri.parse(uri))
+                        }
                     }
                 }
             }
@@ -46,21 +43,35 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.toMutableList().apply {
-                    set(
-                        index,
-                        SegmentedPhoto(segmentedPhotoUri, currentState.photos[index].original)
-                    )
+                    set(index, SegmentedPhoto(uri = segmentedPhotoUri, isProcessing = false))
                 }
+            )
+        }
+    }
+
+    fun selectPhoto(index: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedPhotoIndex = index
+            )
+        }
+    }
+
+    fun clearSelectedPhoto() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedPhotoIndex = null
             )
         }
     }
 }
 
 data class PhotoSegmentUiState(
-    val photos: List<SegmentedPhoto> = listOf()
+    val photos: List<SegmentedPhoto> = listOf(),
+    val selectedPhotoIndex: Int? = null
 )
 
 data class SegmentedPhoto(
-    val segmented: Uri? = null,
-    val original: Uri
+    val uri: Uri,
+    val isProcessing: Boolean = false
 )

@@ -1,6 +1,5 @@
 package com.example.sumit.ui.scan
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,11 +15,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +36,7 @@ import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
 
 object PhotoSegmentDestination : NavigationDestination {
     override val route = "photo_segment"
@@ -48,6 +51,9 @@ fun PhotoSegmentScreen(
     viewModel: PhotoSegmentViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         topBar = {
@@ -71,7 +77,7 @@ fun PhotoSegmentScreen(
             ) {
                 PhotoList(
                     photos = uiState.photos,
-                    onSelect = { },
+                    onSelect = viewModel::selectPhoto,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -82,6 +88,36 @@ fun PhotoSegmentScreen(
                         shape = MaterialTheme.shapes.small
                     ) {
                         Text(stringResource(R.string.next))
+                    }
+                }
+            }
+        }
+
+        if (uiState.selectedPhotoIndex != null) {
+            ModalBottomSheet(
+                onDismissRequest = viewModel::clearSelectedPhoto,
+                sheetState = sheetState
+            ) {
+                Column(
+                    modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding)),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AsyncImage(
+                        model = uiState.photos[uiState.selectedPhotoIndex!!],
+                        contentDescription = stringResource(
+                            R.string.photo_number,
+                            uiState.selectedPhotoIndex!!
+                        )
+                    )
+
+                    Button(onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                viewModel.clearSelectedPhoto()
+                            }
+                        }
+                    }) {
+                        Text("Done")
                     }
                 }
             }
@@ -102,8 +138,7 @@ fun PhotoList(
     ) {
         itemsIndexed(photos) { index, photo ->
             SegmentedPhoto(
-                segmentedPhotoPreview = photo.segmented,
-                originalPhoto = photo.original,
+                photo = photo,
                 index = index,
                 onClick = onSelect,
                 modifier = Modifier.clip(MaterialTheme.shapes.small)
@@ -114,15 +149,14 @@ fun PhotoList(
 
 @Composable
 fun SegmentedPhoto(
-    segmentedPhotoPreview: Uri?,
-    originalPhoto: Uri,
+    photo: SegmentedPhoto,
     index: Int,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
         AsyncImage(
-            model = segmentedPhotoPreview ?: originalPhoto,
+            model = photo.uri,
             contentDescription = stringResource(R.string.photo_number, index),
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,7 +165,7 @@ fun SegmentedPhoto(
         )
 
         AnimatedVisibility(
-            visible = segmentedPhotoPreview == null,
+            visible = photo.isProcessing,
             modifier = Modifier.matchParentSize(),
             enter = fadeIn(),
             exit = fadeOut()
