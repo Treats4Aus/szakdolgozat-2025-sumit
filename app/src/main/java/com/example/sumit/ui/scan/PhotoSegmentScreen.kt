@@ -8,21 +8,30 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,16 +107,55 @@ fun PhotoSegmentScreen(
                 onDismissRequest = viewModel::clearSelectedPhoto,
                 sheetState = sheetState
             ) {
+                var sliderPosition by remember { mutableFloatStateOf(2f) }
+
                 Column(
                     modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding)),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Text(
+                        stringResource(R.string.use_slider),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
                     AsyncImage(
-                        model = uiState.photos[uiState.selectedPhotoIndex!!],
+                        model = uiState.photos[uiState.selectedPhotoIndex!!].uri,
                         contentDescription = stringResource(
                             R.string.photo_number,
                             uiState.selectedPhotoIndex!!
+                        ),
+                        modifier = Modifier
+                            .padding(vertical = dimensionResource(R.dimen.medium_padding))
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            stringResource(R.string.thinner_lines),
+                            style = MaterialTheme.typography.labelSmall
                         )
+
+                        Text(
+                            stringResource(R.string.thicker_lines),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+
+                    Slider(
+                        value = sliderPosition,
+                        onValueChange = { sliderPosition = it },
+                        steps = 3,
+                        valueRange = 0f..4f,
+                        thumb = {
+                            Icon(
+                                imageVector = Icons.Default.Circle,
+                                contentDescription = null,
+                                modifier = Modifier.width(dimensionResource(R.dimen.slider_thumb_width)),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     )
 
                     Button(onClick = {
@@ -117,7 +165,7 @@ fun PhotoSegmentScreen(
                             }
                         }
                     }) {
-                        Text("Done")
+                        Text(stringResource(R.string.done))
                     }
                 }
             }

@@ -1,7 +1,10 @@
 package com.example.sumit.workers
 
 import Catalano.Imaging.FastBitmap
+import Catalano.Imaging.Filters.BinaryDilatation
+import Catalano.Imaging.Filters.BinaryErosion
 import Catalano.Imaging.Filters.BradleyLocalThreshold
+import Catalano.Imaging.Filters.GaussianBlur
 import Catalano.Imaging.Filters.Grayscale
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -42,8 +45,14 @@ class SegmentPhotoWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
                 val grayscale = Grayscale()
                 grayscale.applyInPlace(fb)
 
+                val gaussian = GaussianBlur(4.0, 7)
+                gaussian.applyInPlace(fb)
+
                 val bradley = BradleyLocalThreshold()
                 bradley.applyInPlace(fb)
+
+                val erosion = BinaryErosion(3)
+                val dilatation = BinaryDilatation(3)
 
                 val outputUri = writeBitmapToFile(
                     applicationContext,

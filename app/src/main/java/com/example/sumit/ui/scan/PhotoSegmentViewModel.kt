@@ -25,16 +25,20 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
                 )
             }
             photoUris.forEachIndexed { index, photo ->
-                val workerId = photosRepository.startSegmentation(index, photo)
                 launch {
-                    photosRepository.getSegmentationWorkData(workerId).collect { info ->
-                        val uri = info.outputData.getString(KEY_PHOTO_URI)
-
-                        if (info.state.isFinished && uri != null && _uiState.value.photos[index].isProcessing) {
-                            addSegmentedBitmap(index, Uri.parse(uri))
-                        }
-                    }
+                    startSegmentationForResult(index, photo)
                 }
+            }
+        }
+    }
+
+    private suspend fun startSegmentationForResult(index: Int, photoUri: Uri) {
+        val workerId = photosRepository.startSegmentation(index, photoUri)
+        photosRepository.getSegmentationWorkData(workerId).collect { info ->
+            val uri = info.outputData.getString(KEY_PHOTO_URI)
+
+            if (info.state.isFinished && uri != null && _uiState.value.photos[index].isProcessing) {
+                addSegmentedBitmap(index, Uri.parse(uri))
             }
         }
     }

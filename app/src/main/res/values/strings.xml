@@ -13,4 +13,8 @@
     <string name="delete_image">Delete image</string>
 
     <string name="extract_text">Extract text</string>
+    <string name="done">Done</string>
+    <string name="use_slider">Use the slider to adjust text visibility</string>
+    <string name="thinner_lines">Thinner lines</string>
+    <string name="thicker_lines">Thicker lines</string>
 </resources>
