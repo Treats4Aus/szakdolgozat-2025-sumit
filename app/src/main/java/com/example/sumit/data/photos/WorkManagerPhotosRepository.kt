@@ -1,6 +1,12 @@
 package com.example.sumit.data.photos
 
+import Catalano.Imaging.FastBitmap
+import Catalano.Imaging.Filters.Dilatation
+import Catalano.Imaging.Filters.Erosion
+import Catalano.Imaging.IApplyInPlace
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.work.Data
@@ -19,6 +25,7 @@ import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -85,6 +92,39 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
 
     override fun getSegmentationWorkData(id: UUID): Flow<WorkInfo> =
         workManager.getWorkInfoByIdFlow(id).filterNotNull()
+
+    override suspend fun adjustBitmap(photoUri: Uri, amount: Int): Bitmap? {
+        if (amount == 2) {
+            return null
+        }
+        return withContext(Dispatchers.IO) {
+            val resolver = context.contentResolver
+
+            val photo = BitmapFactory.decodeStream(
+                resolver.openInputStream(photoUri),
+                null,
+                BitmapFactory.Options().apply { inMutable = true }
+            )
+            val fb = FastBitmap(photo)
+
+            ensureActive()
+
+            val filter: IApplyInPlace = if (amount > 2) {
+                Erosion((amount - 2) * 2)
+            } else {
+                Dilatation((2 - amount) * 2)
+            }
+            filter.applyInPlace(fb)
+
+            ensureActive()
+
+            return@withContext fb.toBitmap()
+        }
+    }
+
+    override fun overrideSegmentedPhoto(index: Int, photo: Bitmap): UUID {
+        TODO("Not yet implemented")
+    }
 
     private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
         val builder = Data.Builder()

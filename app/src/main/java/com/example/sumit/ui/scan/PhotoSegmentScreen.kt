@@ -36,16 +36,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+
+private const val TAG = "PhotoSegmentScreen"
 
 object PhotoSegmentDestination : NavigationDestination {
     override val route = "photo_segment"
@@ -118,15 +123,33 @@ fun PhotoSegmentScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
 
-                    AsyncImage(
-                        model = uiState.photos[uiState.selectedPhotoIndex!!].uri,
-                        contentDescription = stringResource(
-                            R.string.photo_number,
-                            uiState.selectedPhotoIndex!!
-                        ),
+                    Box(
                         modifier = Modifier
                             .padding(vertical = dimensionResource(R.dimen.medium_padding))
-                    )
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(
+                                    uiState.adjustedImage
+                                        ?: uiState.photos[uiState.selectedPhotoIndex!!].uri
+                                )
+                                .crossfade(400)
+                                .build(),
+                            contentDescription = stringResource(
+                                R.string.photo_number,
+                                uiState.selectedPhotoIndex!!
+                            )
+                        )
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = uiState.isAdjustmentRunning,
+                            modifier = Modifier.matchParentSize(),
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            CircularLoadingScreenWithBackdrop()
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -146,6 +169,9 @@ fun PhotoSegmentScreen(
                     Slider(
                         value = sliderPosition,
                         onValueChange = { sliderPosition = it },
+                        onValueChangeFinished = {
+                            viewModel.adjustSelectedPhoto(sliderPosition.roundToInt())
+                        },
                         steps = 3,
                         valueRange = 0f..4f,
                         thumb = {
@@ -218,9 +244,7 @@ fun SegmentedPhoto(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            CircularLoadingScreenWithBackdrop(
-                indicatorSize = dimensionResource(R.dimen.progress_indicator_size)
-            )
+            CircularLoadingScreenWithBackdrop()
         }
     }
 }

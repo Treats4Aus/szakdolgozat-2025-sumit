@@ -1,10 +1,12 @@
 package com.example.sumit.ui.scan
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.photos.PhotosRepository
 import com.example.sumit.utils.KEY_PHOTO_URI
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -15,6 +17,8 @@ private const val TAG = "PhotoSegmentViewModel"
 class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(PhotoSegmentUiState())
     val uiState = _uiState.asStateFlow()
+
+    private var currentAdjustment: Job? = null
 
     init {
         viewModelScope.launch {
@@ -68,11 +72,38 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
             )
         }
     }
+
+    fun adjustSelectedPhoto(amount: Int) {
+        currentAdjustment?.cancel()
+        currentAdjustment = viewModelScope.launch {
+            setAdjustmentRunning(true)
+            val result = photosRepository.adjustBitmap(
+                _uiState.value.photos[_uiState.value.selectedPhotoIndex!!].uri,
+                amount
+            )
+            _uiState.update { currentState ->
+                currentState.copy(
+                    adjustedImage = result
+                )
+            }
+            setAdjustmentRunning(false)
+        }
+    }
+
+    private fun setAdjustmentRunning(value: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isAdjustmentRunning = value
+            )
+        }
+    }
 }
 
 data class PhotoSegmentUiState(
     val photos: List<SegmentedPhoto> = listOf(),
-    val selectedPhotoIndex: Int? = null
+    val selectedPhotoIndex: Int? = null,
+    val adjustedImage: Bitmap? = null,
+    val isAdjustmentRunning: Boolean = false
 )
 
 data class SegmentedPhoto(
