@@ -1,8 +1,6 @@
 package com.example.sumit.workers
 
 import Catalano.Imaging.FastBitmap
-import Catalano.Imaging.Filters.BinaryDilatation
-import Catalano.Imaging.Filters.BinaryErosion
 import Catalano.Imaging.Filters.BradleyLocalThreshold
 import Catalano.Imaging.Filters.GaussianBlur
 import Catalano.Imaging.Filters.Grayscale
@@ -50,9 +48,6 @@ class SegmentPhotoWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
 
                 val bradley = BradleyLocalThreshold()
                 bradley.applyInPlace(fb)
-
-                val erosion = BinaryErosion(3)
-                val dilatation = BinaryDilatation(3)
 
                 val outputUri = writeBitmapToFile(
                     applicationContext,

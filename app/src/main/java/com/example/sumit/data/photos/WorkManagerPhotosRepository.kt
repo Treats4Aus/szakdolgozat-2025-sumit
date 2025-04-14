@@ -18,9 +18,11 @@ import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
 import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
@@ -51,12 +53,12 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         continuation.enqueue()
     }
 
-    override suspend fun getTempPhotos(): List<Uri> {
+    override suspend fun getTempPhotos(): List<Uri> = withContext(Dispatchers.IO) {
         val outputDirectory = File(context.filesDir, OUTPUT_PATH)
         if (outputDirectory.exists()) {
             val entries = outputDirectory.listFiles()
             if (entries != null) {
-                return entries
+                return@withContext entries
                     .filter {
                         val name = it.name
                         name.isNotEmpty() && name.startsWith(PHOTO_TYPE_TEMP) && name.endsWith(".png")
@@ -65,7 +67,7 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
                     .map { it.toUri() }
             }
         }
-        return emptyList()
+        return@withContext emptyList()
     }
 
     override fun cancelWork() {
