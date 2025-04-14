@@ -42,12 +42,12 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
             val uri = info.outputData.getString(KEY_PHOTO_URI)
 
             if (info.state.isFinished && uri != null && _uiState.value.photos[index].isProcessing) {
-                addSegmentedBitmap(index, Uri.parse(uri))
+                setSegmentedPhoto(index, Uri.parse(uri))
             }
         }
     }
 
-    private fun addSegmentedBitmap(index: Int, segmentedPhotoUri: Uri) {
+    private fun setSegmentedPhoto(index: Int, segmentedPhotoUri: Uri) {
         _uiState.update { currentState ->
             currentState.copy(
                 photos = currentState.photos.toMutableList().apply {
@@ -68,7 +68,8 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
     fun clearSelectedPhoto() {
         _uiState.update { currentState ->
             currentState.copy(
-                selectedPhotoIndex = null
+                selectedPhotoIndex = null,
+                adjustedImage = null
             )
         }
     }
@@ -95,6 +96,29 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
             currentState.copy(
                 isAdjustmentRunning = value
             )
+        }
+    }
+
+    fun saveAdjustedPhoto() {
+        val index = _uiState.value.selectedPhotoIndex!!
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                photos = currentState.photos.toMutableList().apply {
+                    set(
+                        index,
+                        currentState.photos[index].copy(isProcessing = true)
+                    )
+                }
+            )
+        }
+        viewModelScope.launch {
+            val adjustedPhotoUri = photosRepository.overrideSegmentedPhoto(
+                index,
+                _uiState.value.adjustedImage!!
+            )
+            setSegmentedPhoto(index, adjustedPhotoUri)
+            clearSelectedPhoto()
         }
     }
 }

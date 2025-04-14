@@ -18,12 +18,14 @@ import androidx.work.WorkManager
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
+import com.example.sumit.utils.PHOTO_TYPE_SEGMENTED
 import com.example.sumit.utils.PHOTO_TYPE_TEMP
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
 import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
 import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
+import com.example.sumit.workers.writeBitmapToFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -122,9 +124,10 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         }
     }
 
-    override fun overrideSegmentedPhoto(index: Int, photo: Bitmap): UUID {
-        TODO("Not yet implemented")
-    }
+    override suspend fun overrideSegmentedPhoto(index: Int, photo: Bitmap): Uri =
+        withContext(Dispatchers.IO) {
+            writeBitmapToFile(context, photo, PHOTO_TYPE_SEGMENTED, index)
+        }
 
     private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
         val builder = Data.Builder()

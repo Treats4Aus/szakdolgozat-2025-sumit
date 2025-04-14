@@ -14,5 +14,5 @@ interface PhotosRepository {
     fun startSegmentation(index: Int, photoUri: Uri): UUID
     fun getSegmentationWorkData(id: UUID): Flow<WorkInfo>
     suspend fun adjustBitmap(photoUri: Uri, amount: Int): Bitmap?
-    fun overrideSegmentedPhoto(index: Int, photo: Bitmap): UUID
+    suspend fun overrideSegmentedPhoto(index: Int, photo: Bitmap): Uri
 }

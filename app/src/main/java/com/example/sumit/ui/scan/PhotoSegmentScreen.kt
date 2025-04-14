@@ -28,6 +28,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -184,13 +185,18 @@ fun PhotoSegmentScreen(
                         }
                     )
 
-                    Button(onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                viewModel.clearSelectedPhoto()
+                    Button(
+                        onClick = {
+                            viewModel.saveAdjustedPhoto()
+
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    viewModel.clearSelectedPhoto()
+                                }
                             }
-                        }
-                    }) {
+                        },
+                        enabled = !uiState.isAdjustmentRunning
+                    ) {
                         Text(stringResource(R.string.done))
                     }
                 }
@@ -229,14 +235,16 @@ fun SegmentedPhoto(
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
-        AsyncImage(
-            model = photo.uri,
-            contentDescription = stringResource(R.string.photo_number, index),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick(index) },
-            contentScale = ContentScale.FillWidth
-        )
+        key(photo) {
+            AsyncImage(
+                model = photo.uri,
+                contentDescription = stringResource(R.string.photo_number, index),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onClick(index) },
+                contentScale = ContentScale.FillWidth
+            )
+        }
 
         AnimatedVisibility(
             visible = photo.isProcessing,
