@@ -100,6 +100,10 @@ class PhotoSegmentViewModel(private val photosRepository: PhotosRepository) : Vi
     }
 
     fun saveAdjustedPhoto() {
+        if (_uiState.value.adjustedImage == null) {
+            return
+        }
+
         val index = _uiState.value.selectedPhotoIndex!!
 
         _uiState.update { currentState ->
