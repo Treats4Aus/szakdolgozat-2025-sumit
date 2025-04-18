@@ -19,4 +19,10 @@
     <string name="thicker_lines">Thicker lines</string>
 
     <string name="processing_photos">Processing photos</string>
+    <string name="initializing">Initializing</string>
+    <string name="downloading_models">Downloading models</string>
+    <string name="recognizing_text">Recognizing text</string>
+    <string name="refining_text">Refining text</string>
+    <string name="creating_note">Creating note</string>
+    <string name="generating_keywords">Generating keywords</string>
 </resources>
