@@ -40,6 +40,10 @@
                 android:resource="@xml/path_provider" />
         </provider>
 
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr" />
+
     </application>
 
 </manifest>

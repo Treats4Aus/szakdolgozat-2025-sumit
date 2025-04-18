@@ -20,9 +20,11 @@ import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
 import com.example.sumit.utils.PHOTO_TYPE_SEGMENTED
 import com.example.sumit.utils.PHOTO_TYPE_TEMP
+import com.example.sumit.utils.PROCESSING_WORK_NAME
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
 import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
 import com.example.sumit.workers.CleanupWorker
+import com.example.sumit.workers.ModelDownloadWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
 import com.example.sumit.workers.writeBitmapToFile
@@ -128,6 +130,16 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         withContext(Dispatchers.IO) {
             writeBitmapToFile(context, photo, PHOTO_TYPE_SEGMENTED, index)
         }
+
+    override fun startProcessing() {
+        var continuation = workManager.beginUniqueWork(
+            PROCESSING_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequest.from(ModelDownloadWorker::class.java)
+        )
+
+        continuation.enqueue()
+    }
 
     private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
         val builder = Data.Builder()

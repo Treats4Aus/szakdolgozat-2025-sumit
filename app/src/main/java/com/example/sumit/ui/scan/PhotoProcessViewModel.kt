@@ -10,6 +10,10 @@ import com.example.sumit.data.photos.PhotosRepository
 class PhotoProcessViewModel(private val photosRepository: PhotosRepository) : ViewModel() {
     private val _processState = mutableStateOf(ProcessState.INITIALIZING)
     val processState: State<ProcessState> = _processState
+
+    init {
+        photosRepository.startProcessing()
+    }
 }
 
 enum class ProcessState(@StringRes val descriptionRes: Int) {

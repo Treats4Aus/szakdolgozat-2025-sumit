@@ -10,9 +10,12 @@ interface PhotosRepository {
     val movePhotosWorkData: Flow<List<WorkInfo>>
     fun movePhotosToTemp(photoUris: List<Uri>)
     fun cancelWork()
+
     suspend fun getTempPhotos(): List<Uri>
     fun startSegmentation(index: Int, photoUri: Uri): UUID
     fun getSegmentationWorkData(id: UUID): Flow<WorkInfo>
     suspend fun adjustBitmap(photoUri: Uri, amount: Int): Bitmap?
     suspend fun overrideSegmentedPhoto(index: Int, photo: Bitmap): Uri
+
+    fun startProcessing()
 }
