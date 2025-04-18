@@ -5,18 +5,23 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
@@ -61,6 +66,7 @@ import coil.compose.AsyncImage
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
+import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.navigation.NavigationDestination
 import com.mr0xf00.easycrop.ui.ImageCropperDialog
 import kotlinx.coroutines.launch
@@ -79,6 +85,7 @@ object PhotoSelectDestination : NavigationDestination {
 @Composable
 fun PhotoSelectScreen(
     onCancel: () -> Unit,
+    onNextStep: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PhotoSelectViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -101,7 +108,16 @@ fun PhotoSelectScreen(
     val cameraLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { photoTaken ->
             if (photoTaken) {
-                viewModel.addPhotoFromCamera()
+                val isUriValid = try {
+                    context.contentResolver.openInputStream(uiState.cameraPhotoUri).use {
+                        it != null && it.available() > 0
+                    }
+                } catch (ex: Exception) {
+                    false
+                }
+                if (isUriValid) {
+                    viewModel.addPhotoFromCamera()
+                }
             }
         }
 
@@ -112,7 +128,12 @@ fun PhotoSelectScreen(
             }
         }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(uiState.savePhotosState) {
+        if (uiState.savePhotosState == SavePhotosState.Complete) {
+            viewModel.resetSavePhotoState()
+            onNextStep()
+        }
+
         if (uiState.useCamera != null) {
             if (uiState.useCamera == true) {
                 viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
@@ -131,34 +152,54 @@ fun PhotoSelectScreen(
                 canNavigateBack = true,
                 navigateUp = onCancel
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = dimensionResource(R.dimen.medium_padding))
+                .padding(innerPadding),
+            contentAlignment = Alignment.Center
         ) {
-            PhotoGrid(
-                photos = uiState.photos,
-                onSelect = viewModel::selectPhoto,
-                onMove = viewModel::movePhoto,
-                modifier = Modifier.weight(1f)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = dimensionResource(R.dimen.medium_padding))
+            ) {
+                PhotoGrid(
+                    photos = uiState.photos,
+                    onSelect = viewModel::selectPhoto,
+                    onMove = viewModel::movePhoto,
+                    modifier = Modifier.weight(1f)
+                )
 
-            AddPhotoButtons(
-                onGalleryClick = {
-                    pickMediaLauncher.launch(
-                        PickVisualMediaRequest(
-                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                AddPhotoButtons(
+                    canContinue = uiState.photos.isNotEmpty(),
+                    onGalleryClick = {
+                        pickMediaLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
-                    )
-                },
-                onCameraClick = {
-                    viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
-                },
-                onContinueClick = viewModel::savePhotosToTemp
-            )
+                    },
+                    onCameraClick = {
+                        viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+                    },
+                    onContinueClick = {
+                        viewModel.savePhotosToTemp()
+                    }
+                )
+            }
+
+            AnimatedVisibility(
+                visible = uiState.savePhotosState == SavePhotosState.Loading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                CircularLoadingScreenWithBackdrop(
+                    indicatorSize = dimensionResource(R.dimen.progress_indicator_size)
+                )
+            }
         }
 
         if (cropState != null) {
@@ -177,7 +218,7 @@ fun PhotoSelectScreen(
                     AsyncImage(
                         model = uiState.photos[uiState.selectedPhotoIndex!!].uri,
                         contentDescription = stringResource(
-                            R.string.image_number,
+                            R.string.photo_number,
                             uiState.selectedPhotoIndex!!
                         )
                     )
@@ -290,7 +331,7 @@ fun NotePhoto(
 ) {
     AsyncImage(
         model = photo,
-        contentDescription = stringResource(R.string.image_number, index),
+        contentDescription = stringResource(R.string.photo_number, index),
         modifier = modifier
             .aspectRatio(1f)
             .clip(MaterialTheme.shapes.small)
@@ -312,6 +353,7 @@ fun NoNotePhotos(modifier: Modifier = Modifier) {
 
 @Composable
 fun AddPhotoButtons(
+    canContinue: Boolean,
     onGalleryClick: () -> Unit,
     onCameraClick: () -> Unit,
     onContinueClick: () -> Unit,
@@ -337,6 +379,7 @@ fun AddPhotoButtons(
         Button(
             onClick = onContinueClick,
             modifier = Modifier.fillMaxWidth(),
+            enabled = canContinue,
             shape = MaterialTheme.shapes.small
         ) {
             Text(stringResource(R.string.next))
@@ -402,5 +445,5 @@ fun BottomSheetOption(
 @Preview
 @Composable
 private fun PhotoSelectScreenPreview() {
-    PhotoSelectScreen(onCancel = { })
+    PhotoSelectScreen(onCancel = { }, onNextStep = { })
 }

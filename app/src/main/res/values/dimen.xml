@@ -6,4 +6,6 @@
     <dimen name="floating_card_width">172dp</dimen>
     <dimen name="column_gap">4dp</dimen>
     <dimen name="photo_grid_min_width">136dp</dimen>
+    <dimen name="progress_indicator_size">72dp</dimen>
+    <dimen name="slider_thumb_width">24dp</dimen>
 </resources>

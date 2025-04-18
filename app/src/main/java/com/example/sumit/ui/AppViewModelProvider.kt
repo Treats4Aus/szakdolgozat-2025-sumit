@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sumit.SumItApplication
 import com.example.sumit.ui.home.notes.MyNotesViewModel
+import com.example.sumit.ui.scan.PhotoSegmentViewModel
 import com.example.sumit.ui.scan.PhotoSelectViewModel
 
 object AppViewModelProvider {
@@ -21,6 +22,12 @@ object AppViewModelProvider {
             PhotoSelectViewModel(
                 photosRepository = sumItApplication().container.photosRepository,
                 savedStateHandle = this.createSavedStateHandle()
+            )
+        }
+
+        initializer {
+            PhotoSegmentViewModel(
+                photosRepository = sumItApplication().container.photosRepository
             )
         }
     }

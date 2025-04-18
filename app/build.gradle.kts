@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.easycrop)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
     ksp(libs.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
