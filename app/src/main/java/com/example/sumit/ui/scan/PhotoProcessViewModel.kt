@@ -4,15 +4,19 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
 import com.example.sumit.data.photos.PhotosRepository
+import kotlinx.coroutines.launch
 
 class PhotoProcessViewModel(private val photosRepository: PhotosRepository) : ViewModel() {
     private val _processState = mutableStateOf(ProcessState.INITIALIZING)
     val processState: State<ProcessState> = _processState
 
     init {
-        photosRepository.startProcessing()
+        viewModelScope.launch {
+            photosRepository.startProcessing()
+        }
     }
 }
 

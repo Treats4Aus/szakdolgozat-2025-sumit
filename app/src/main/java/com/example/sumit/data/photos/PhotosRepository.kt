@@ -17,5 +17,5 @@ interface PhotosRepository {
     suspend fun adjustBitmap(photoUri: Uri, amount: Int): Bitmap?
     suspend fun overrideSegmentedPhoto(index: Int, photo: Bitmap): Uri
 
-    fun startProcessing()
+    suspend fun startProcessing()
 }

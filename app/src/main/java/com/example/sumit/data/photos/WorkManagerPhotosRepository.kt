@@ -15,6 +15,7 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
@@ -27,6 +28,7 @@ import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.ModelDownloadWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
+import com.example.sumit.workers.TextRecognitionWorker
 import com.example.sumit.workers.writeBitmapToFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -64,22 +66,7 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         continuation.enqueue()
     }
 
-    override suspend fun getTempPhotos(): List<Uri> = withContext(Dispatchers.IO) {
-        val outputDirectory = File(context.filesDir, OUTPUT_PATH)
-        if (outputDirectory.exists()) {
-            val entries = outputDirectory.listFiles()
-            if (entries != null) {
-                return@withContext entries
-                    .filter {
-                        val name = it.name
-                        name.isNotEmpty() && name.startsWith(PHOTO_TYPE_TEMP) && name.endsWith(".png")
-                    }
-                    .sortedBy { it.name }
-                    .map { it.toUri() }
-            }
-        }
-        return@withContext emptyList()
-    }
+    override suspend fun getTempPhotos(): List<Uri> = getPhotoUrisByType(PHOTO_TYPE_TEMP)
 
     override fun cancelWork() {
         workManager.cancelUniqueWork(SAVE_PHOTOS_WORK_NAME)
@@ -131,12 +118,22 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
             writeBitmapToFile(context, photo, PHOTO_TYPE_SEGMENTED, index)
         }
 
-    override fun startProcessing() {
+    override suspend fun startProcessing() {
+        val segmentedPhotoUris = getPhotoUrisByType(PHOTO_TYPE_SEGMENTED)
+
         var continuation = workManager.beginUniqueWork(
             PROCESSING_WORK_NAME,
             ExistingWorkPolicy.REPLACE,
             OneTimeWorkRequest.from(ModelDownloadWorker::class.java)
         )
+
+        val recognitionWorkers = segmentedPhotoUris.map {
+            val builder = OneTimeWorkRequestBuilder<TextRecognitionWorker>()
+            builder
+                .setInputData(workDataOf(KEY_PHOTO_URI to it.toString()))
+                .build()
+        }
+        continuation = continuation.then(recognitionWorkers)
 
         continuation.enqueue()
     }
@@ -146,5 +143,22 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         builder.putInt(KEY_PHOTO_INDEX, index)
         builder.putString(KEY_PHOTO_URI, photoUri.toString())
         return builder.build()
+    }
+
+    private suspend fun getPhotoUrisByType(type: String): List<Uri> = withContext(Dispatchers.IO) {
+        val outputDirectory = File(context.filesDir, OUTPUT_PATH)
+        if (outputDirectory.exists()) {
+            val entries = outputDirectory.listFiles()
+            if (entries != null) {
+                return@withContext entries
+                    .filter {
+                        val name = it.name
+                        name.isNotEmpty() && name.startsWith(type) && name.endsWith(".png")
+                    }
+                    .sortedBy { it.name }
+                    .map { it.toUri() }
+            }
+        }
+        return@withContext emptyList()
     }
 }

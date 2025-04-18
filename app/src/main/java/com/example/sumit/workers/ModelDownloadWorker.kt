@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.gms.common.moduleinstall.ModuleInstall
+import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CancellationException
@@ -16,15 +17,19 @@ class ModelDownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
     override suspend fun doWork(): Result {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         val moduleInstallClient = ModuleInstall.getClient(applicationContext)
+        val moduleInstallRequest = ModuleInstallRequest.newBuilder()
+            .addApi(recognizer)
+            .build()
+
         try {
-            val result = moduleInstallClient.areModulesAvailable(recognizer).await()
-            if (result.areModulesAvailable()) {
+            val installResponse =
+                moduleInstallClient.installModules(moduleInstallRequest).await()
+            if (installResponse.areModulesAlreadyInstalled()) {
                 Log.d(TAG, "Text recognizer available")
-                return Result.success()
             } else {
-                Log.d(TAG, "Text recognizer not available")
-                return Result.failure()
+                Log.d(TAG, "Text recognizer downloaded")
             }
+            return Result.success()
         } catch (throwable: Throwable) {
             if (throwable is CancellationException) {
                 throw throwable
