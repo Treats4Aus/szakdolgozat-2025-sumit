@@ -14,6 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.sumit.ui.home.HomeDestination
 import com.example.sumit.ui.home.HomeScreen
+import com.example.sumit.ui.scan.PhotoProcessDestination
+import com.example.sumit.ui.scan.PhotoProcessScreen
 import com.example.sumit.ui.scan.PhotoSegmentDestination
 import com.example.sumit.ui.scan.PhotoSegmentScreen
 import com.example.sumit.ui.scan.PhotoSelectDestination
@@ -64,7 +66,17 @@ fun SumItNavHost(
         }
 
         composable(route = PhotoSegmentDestination.route) {
-            PhotoSegmentScreen(onCancel = { navController.navigateUp() }, onNextStep = { })
+            PhotoSegmentScreen(
+                onCancel = { navController.navigateUp() },
+                onNextStep = { navController.navigate(PhotoProcessDestination.route) }
+            )
+        }
+
+        composable(route = PhotoProcessDestination.route) {
+            PhotoProcessScreen(
+                onCancel = { navController.navigateUp() },
+                onProcessingDone = { }
+            )
         }
     }
 }

@@ -17,4 +17,6 @@
     <string name="use_slider">Use the slider to adjust text visibility</string>
     <string name="thinner_lines">Thinner lines</string>
     <string name="thicker_lines">Thicker lines</string>
+
+    <string name="processing_photos">Processing photos</string>
 </resources>
