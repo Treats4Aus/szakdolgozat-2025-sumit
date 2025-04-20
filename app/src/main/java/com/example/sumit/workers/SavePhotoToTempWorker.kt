@@ -1,6 +1,7 @@
 package com.example.sumit.workers
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
@@ -30,13 +31,14 @@ class SavePhotoToTempWorker(ctx: Context, params: WorkerParameters) :
                 }
                 val resolver = applicationContext.contentResolver
 
-                val photo = BitmapFactory.decodeStream(
-                    resolver.openInputStream(Uri.parse(photoUri))
-                )
+                var photo: Bitmap?
+                resolver.openInputStream(Uri.parse(photoUri)).use { stream ->
+                    photo = BitmapFactory.decodeStream(stream)
+                }
 
                 val outputUri = writeBitmapToFile(
                     applicationContext,
-                    photo,
+                    photo!!,
                     PHOTO_TYPE_TEMP,
                     photoIndex
                 )
