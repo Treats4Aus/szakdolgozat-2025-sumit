@@ -22,7 +22,7 @@ class TextRefiningWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
             .joinToString(" ")
         Log.d(TAG, "Extracted text: $extractedText")
         val prompt =
-            "Your task is to count the number of words in the following text. Only output a single the number. The text is as follows: $extractedText"
+            "Your task is to fix mistyped characters in the provided text. Fix every word with the help of the context so in the end the text makes the most sense and is grammatically correct. Use every word from the input in the provided order, don't leave anything out. Pay attention to punctuation. Only output the resulting text. The input text is: $extractedText"
 
         return withContext(Dispatchers.IO) {
             val result = inferenceModel.generateOneTimeResponse(prompt)

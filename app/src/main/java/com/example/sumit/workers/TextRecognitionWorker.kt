@@ -43,7 +43,12 @@ class TextRecognitionWorker(ctx: Context, param: WorkerParameters) : CoroutineWo
                     }
                 }
                 val outputData =
-                    workDataOf(KEY_EXTRACTED_TEXT.format(photoIndex) to recognitionResult.text)
+                    workDataOf(
+                        KEY_EXTRACTED_TEXT.format(photoIndex) to recognitionResult.text.replace(
+                            "\n",
+                            ""
+                        )
+                    )
 
                 Result.success(outputData)
             } catch (ioException: IOException) {
