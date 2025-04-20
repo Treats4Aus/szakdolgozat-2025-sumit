@@ -13,9 +13,11 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OverwritingInputMerger
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.sumit.utils.KEY_PAGE_COUNT
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
@@ -29,6 +31,7 @@ import com.example.sumit.workers.ModelDownloadWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
 import com.example.sumit.workers.TextRecognitionWorker
+import com.example.sumit.workers.TextRefiningWorker
 import com.example.sumit.workers.writeBitmapToFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -127,13 +130,20 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
             OneTimeWorkRequest.from(ModelDownloadWorker::class.java)
         )
 
-        val recognitionWorkers = segmentedPhotoUris.map {
+        val recognitionWorkers = segmentedPhotoUris.mapIndexed { index, photo ->
             val builder = OneTimeWorkRequestBuilder<TextRecognitionWorker>()
             builder
-                .setInputData(workDataOf(KEY_PHOTO_URI to it.toString()))
+                .setInputData(createInputDataForWorkRequest(index, photo))
                 .build()
         }
         continuation = continuation.then(recognitionWorkers)
+
+        val refiningWorker = OneTimeWorkRequestBuilder<TextRefiningWorker>()
+            .setInputMerger(OverwritingInputMerger::class.java)
+            .setInputData(workDataOf(KEY_PAGE_COUNT to segmentedPhotoUris.size))
+            .build()
+
+        continuation = continuation.then(refiningWorker)
 
         continuation.enqueue()
     }

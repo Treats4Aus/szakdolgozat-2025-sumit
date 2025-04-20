@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.sumit.utils.KEY_EXTRACTED_TEXT
+import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -21,6 +22,7 @@ private const val TAG = "TextRecognitionWorker"
 
 class TextRecognitionWorker(ctx: Context, param: WorkerParameters) : CoroutineWorker(ctx, param) {
     override suspend fun doWork(): Result {
+        val photoIndex = inputData.getInt(KEY_PHOTO_INDEX, 0)
         val photoUri = inputData.getString(KEY_PHOTO_URI)
 
         return withContext(Dispatchers.IO) {
@@ -40,18 +42,18 @@ class TextRecognitionWorker(ctx: Context, param: WorkerParameters) : CoroutineWo
                         Log.d(TAG, line.text)
                     }
                 }
-                val outputData = workDataOf(KEY_EXTRACTED_TEXT to recognitionResult.text)
+                val outputData =
+                    workDataOf(KEY_EXTRACTED_TEXT.format(photoIndex) to recognitionResult.text)
 
                 Result.success(outputData)
             } catch (ioException: IOException) {
-                Log.e(TAG, "Loading photo failed")
-                ioException.printStackTrace()
+                Log.e(TAG, "Loading photo failed", ioException)
                 Result.failure()
             } catch (throwable: Throwable) {
                 if (throwable is CancellationException) {
                     throw throwable
                 }
-                Log.e(TAG, "Error extracting text")
+                Log.e(TAG, "Error extracting text: ${throwable.message}", throwable)
                 Result.failure()
             }
         }

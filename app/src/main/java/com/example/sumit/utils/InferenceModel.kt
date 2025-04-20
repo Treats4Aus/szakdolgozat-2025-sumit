@@ -19,6 +19,7 @@ class ModelSessionCreateFailException :
 
 class InferenceModel private constructor(context: Context) {
     private lateinit var llmInference: LlmInference
+    private lateinit var llmInferenceSession: LlmInferenceSession
 
     init {
         if (!modelExists(context)) {
@@ -26,10 +27,17 @@ class InferenceModel private constructor(context: Context) {
         }
 
         createEngine(context)
+        createSession()
     }
 
     fun close() {
+        llmInferenceSession.close()
         llmInference.close()
+    }
+
+    fun resetSession() {
+        llmInferenceSession.close()
+        createSession()
     }
 
     private fun createEngine(context: Context) {
@@ -47,15 +55,16 @@ class InferenceModel private constructor(context: Context) {
         }
     }
 
-    private fun createSession(): LlmInferenceSession {
+    private fun createSession() {
         val sessionOptions = LlmInferenceSessionOptions.builder()
             .setTemperature(model.temperature)
             .setTopK(model.topK)
             .setTopP(model.topP)
             .build()
 
-        return try {
-            LlmInferenceSession.createFromOptions(llmInference, sessionOptions)
+        try {
+            llmInferenceSession =
+                LlmInferenceSession.createFromOptions(llmInference, sessionOptions)
         } catch (e: Exception) {
             Log.e(TAG, "Error creating session: ${e.message}", e)
             throw ModelSessionCreateFailException()
@@ -63,12 +72,10 @@ class InferenceModel private constructor(context: Context) {
     }
 
     suspend fun generateOneTimeResponse(prompt: String): String {
-        val llmInferenceSession = createSession()
-
         llmInferenceSession.addQueryChunk(prompt)
         val response = llmInferenceSession.generateResponseAsync().await()
 
-        llmInferenceSession.close()
+        resetSession()
         return response
     }
 
