@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.storage.ktx)
     implementation(libs.play.services.base)
     implementation(libs.play.services.mlkit.text.recognition)
     implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
