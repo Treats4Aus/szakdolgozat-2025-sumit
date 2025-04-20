@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -62,6 +63,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.play.services.base)
     implementation(libs.play.services.mlkit.text.recognition)
     implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
