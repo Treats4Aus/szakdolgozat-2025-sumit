@@ -39,8 +39,7 @@ class ModelDownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
             if (throwable is CancellationException) {
                 throw throwable
             }
-            Log.e(TAG, "Text recognizer availability check failed")
-            throwable.printStackTrace()
+            Log.e(TAG, "Text recognizer availability check failed", throwable)
             return Result.failure()
         }
 
@@ -65,8 +64,7 @@ class ModelDownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
             if (throwable is CancellationException) {
                 throw throwable
             }
-            Log.e(TAG, "Model download failed")
-            throwable.printStackTrace()
+            Log.e(TAG, "Model download failed", throwable)
             return Result.failure()
         }
 

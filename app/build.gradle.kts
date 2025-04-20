@@ -52,24 +52,47 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+
+    // Material
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+
+    // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Navigation
     implementation(libs.androidx.navigation.compose)
+
+    // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
+
+    // Helper libraries
     implementation(libs.coil.compose)
     implementation(libs.reorderable)
     implementation(libs.easycrop)
+
+    // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    // Concurrency helpers
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.kotlinx.coroutines.guava)
+
+    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.storage.ktx)
+
+    // Google services
     implementation(libs.play.services.base)
     implementation(libs.play.services.mlkit.text.recognition)
-    implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
+    implementation(libs.tasks.genai)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
-    ksp(libs.room.compiler)
+
+    // Catalano
+    implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
