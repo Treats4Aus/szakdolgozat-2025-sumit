@@ -17,5 +17,6 @@ interface PhotosRepository {
     suspend fun adjustBitmap(photoUri: Uri, amount: Int): Bitmap?
     suspend fun overrideSegmentedPhoto(index: Int, photo: Bitmap): Uri
 
+    val processingWorkData: Flow<List<WorkInfo>>
     suspend fun startProcessing()
 }

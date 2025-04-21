@@ -25,7 +25,12 @@ import com.example.sumit.utils.PHOTO_TYPE_SEGMENTED
 import com.example.sumit.utils.PHOTO_TYPE_TEMP
 import com.example.sumit.utils.PROCESSING_WORK_NAME
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
+import com.example.sumit.utils.TAG_DOWNLOAD_WORKER
+import com.example.sumit.utils.TAG_RECOGNITION_WORKER
+import com.example.sumit.utils.TAG_REFINING_WORKER
 import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
+import com.example.sumit.utils.TAG_STRUCTURING_WORKER
+import com.example.sumit.utils.TAG_SUMMARY_WORKER
 import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.ModelDownloadWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
@@ -123,19 +128,27 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
             writeBitmapToFile(context, photo, PHOTO_TYPE_SEGMENTED, index)
         }
 
+    override val processingWorkData: Flow<List<WorkInfo>> =
+        workManager.getWorkInfosForUniqueWorkFlow(PROCESSING_WORK_NAME)
+
     override suspend fun startProcessing() {
         val segmentedPhotoUris = getPhotoUrisByType(PHOTO_TYPE_SEGMENTED)
+
+        val downloadWorker = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
+            .addTag(TAG_DOWNLOAD_WORKER)
+            .build()
 
         var continuation = workManager.beginUniqueWork(
             PROCESSING_WORK_NAME,
             ExistingWorkPolicy.REPLACE,
-            OneTimeWorkRequest.from(ModelDownloadWorker::class.java)
+            downloadWorker
         )
 
         val recognitionWorkers = segmentedPhotoUris.mapIndexed { index, photo ->
             val builder = OneTimeWorkRequestBuilder<TextRecognitionWorker>()
             builder
                 .setInputData(createInputDataForWorkRequest(index, photo))
+                .addTag(TAG_RECOGNITION_WORKER)
                 .build()
         }
         continuation = continuation.then(recognitionWorkers)
@@ -143,16 +156,19 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         val refiningWorker = OneTimeWorkRequestBuilder<TextRefiningWorker>()
             .setInputMerger(OverwritingInputMerger::class.java)
             .setInputData(workDataOf(KEY_PAGE_COUNT to segmentedPhotoUris.size))
+            .addTag(TAG_REFINING_WORKER)
             .build()
 
         continuation = continuation.then(refiningWorker)
 
         val structuringWorker = OneTimeWorkRequestBuilder<TextStructuringWorker>()
+            .addTag(TAG_STRUCTURING_WORKER)
             .build()
 
         continuation = continuation.then(structuringWorker)
 
         val summaryGeneratingWorker = OneTimeWorkRequestBuilder<SummaryGeneratingWorker>()
+            .addTag(TAG_SUMMARY_WORKER)
             .build()
 
         continuation = continuation.then(summaryGeneratingWorker)

@@ -11,6 +11,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +38,13 @@ fun PhotoProcessScreen(
     modifier: Modifier = Modifier,
     viewModel: PhotoProcessViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val processState by viewModel.processState
+    val processState by viewModel.processState.collectAsState()
+
+    LaunchedEffect(processState) {
+        if (processState == ProcessState.DONE) {
+            onProcessingDone()
+        }
+    }
 
     Scaffold(
         topBar = {
