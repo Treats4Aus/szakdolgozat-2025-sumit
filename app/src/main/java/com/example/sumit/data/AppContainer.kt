@@ -5,11 +5,14 @@ import com.example.sumit.data.notes.LocalNotesRepository
 import com.example.sumit.data.notes.NotesRepository
 import com.example.sumit.data.photos.PhotosRepository
 import com.example.sumit.data.photos.WorkManagerPhotosRepository
+import com.example.sumit.utils.InferenceModel
 
 interface AppContainer {
     val notesRepository: NotesRepository
 
     val photosRepository: PhotosRepository
+
+    val inferenceModel: InferenceModel
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -19,5 +22,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val photosRepository: PhotosRepository by lazy {
         WorkManagerPhotosRepository(context)
+    }
+
+    override val inferenceModel: InferenceModel by lazy {
+        InferenceModel.getInstance(context)
     }
 }

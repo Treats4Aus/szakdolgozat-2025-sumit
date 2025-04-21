@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.sumit.utils.InferenceModel
+import com.example.sumit.SumItApplication
 import com.example.sumit.utils.KEY_EXTRACTED_TEXT
 import com.example.sumit.utils.KEY_PAGE_COUNT
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ class TextRefiningWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
         val prompt = """
             You are an expert at proofreading and correcting text. Your task is to fix mistyped or misplaced letters in the following text while preserving the original meaning and structure. Correct typos and ensure proper spelling without altering the intended content. The text is in English. Here's the text:
             `$extractedText`
-            Please provide the corrected version. Output nothing else.
+            Please provide the corrected version. Output only raw text.
             
             **Example Input:**
             "The qick brown fox jmps ovre the lozy dog."
@@ -32,7 +32,8 @@ class TextRefiningWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
         """.trimIndent()
 
         return withContext(Dispatchers.IO) {
-            val inferenceModel = InferenceModel.getInstance(applicationContext)
+            val app = applicationContext as SumItApplication
+            val inferenceModel = app.container.inferenceModel
             val result = inferenceModel.generateOneTimeResponse(prompt)
             Log.d(TAG, result)
             Result.success()

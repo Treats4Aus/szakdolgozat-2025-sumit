@@ -80,7 +80,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
-        private val model = Model.GEMMA3_GPU
+        private val model = Model.GEMMA3_CPU
 
         @Volatile
         private var Instance: InferenceModel? = null
