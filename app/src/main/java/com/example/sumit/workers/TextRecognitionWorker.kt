@@ -46,7 +46,7 @@ class TextRecognitionWorker(ctx: Context, param: WorkerParameters) : CoroutineWo
                     workDataOf(
                         KEY_EXTRACTED_TEXT.format(photoIndex) to recognitionResult.text.replace(
                             "\n",
-                            ""
+                            " "
                         )
                     )
 

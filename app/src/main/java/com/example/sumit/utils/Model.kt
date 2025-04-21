@@ -12,7 +12,7 @@ enum class Model(
     GEMMA3_GPU(
         modelName = MODEL_NAME,
         preferredBackend = Backend.GPU,
-        temperature = 1f,
+        temperature = 0.8f,
         topK = 64,
         topP = 0.95f
     )
