@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.example.sumit.SumItApplication
 import com.example.sumit.utils.KEY_EXTRACTED_TEXT
+import com.example.sumit.utils.KEY_NOTE_TEXT
 import com.example.sumit.utils.KEY_PAGE_COUNT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,7 +38,7 @@ class TextRefiningWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
             val inferenceModel = app.container.inferenceModel
             val result = inferenceModel.generateOneTimeResponse(prompt)
             Log.d(TAG, result)
-            Result.success()
+            Result.success(workDataOf(KEY_NOTE_TEXT to result))
         }
     }
 }

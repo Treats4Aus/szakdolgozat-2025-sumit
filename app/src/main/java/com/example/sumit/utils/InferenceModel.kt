@@ -79,6 +79,11 @@ class InferenceModel private constructor(context: Context) {
         return response
     }
 
+    suspend fun generateResponse(prompt: String): String {
+        llmInferenceSession.addQueryChunk(prompt)
+        return llmInferenceSession.generateResponseAsync().await()
+    }
+
     companion object {
         private val model = Model.GEMMA3_CPU
 

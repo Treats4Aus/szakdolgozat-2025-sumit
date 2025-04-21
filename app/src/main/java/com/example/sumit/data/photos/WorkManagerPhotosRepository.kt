@@ -30,8 +30,10 @@ import com.example.sumit.workers.CleanupWorker
 import com.example.sumit.workers.ModelDownloadWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
+import com.example.sumit.workers.SummaryGeneratingWorker
 import com.example.sumit.workers.TextRecognitionWorker
 import com.example.sumit.workers.TextRefiningWorker
+import com.example.sumit.workers.TextStructuringWorker
 import com.example.sumit.workers.writeBitmapToFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -144,6 +146,16 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
             .build()
 
         continuation = continuation.then(refiningWorker)
+
+        val structuringWorker = OneTimeWorkRequestBuilder<TextStructuringWorker>()
+            .build()
+
+        continuation = continuation.then(structuringWorker)
+
+        val summaryGeneratingWorker = OneTimeWorkRequestBuilder<SummaryGeneratingWorker>()
+            .build()
+
+        continuation = continuation.then(summaryGeneratingWorker)
 
         continuation.enqueue()
     }
