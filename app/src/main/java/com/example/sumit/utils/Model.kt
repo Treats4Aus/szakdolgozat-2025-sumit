@@ -19,7 +19,7 @@ enum class Model(
     GEMMA3_CPU(
         modelName = MODEL_NAME,
         preferredBackend = Backend.CPU,
-        temperature = 0.8f,
+        temperature = 0.3f,
         topK = 64,
         topP = 0.95f
     )
