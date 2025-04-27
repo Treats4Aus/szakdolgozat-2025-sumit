@@ -48,9 +48,13 @@ fun SumItNavHost(
         }
     ) {
         composable(route = HomeDestination.route) {
-            HomeScreen(onNewScan = {
-                navController.navigate("${PhotoSelectDestination.route}/$it")
-            })
+            HomeScreen(
+                onNewScan = {
+                    navController.navigate("${PhotoSelectDestination.route}/$it")
+                },
+                onViewNote = { },
+                onEditNote = { }
+            )
         }
 
         composable(
