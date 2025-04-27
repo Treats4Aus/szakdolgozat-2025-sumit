@@ -1,6 +1,7 @@
 package com.example.sumit.data.notes
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -14,6 +15,9 @@ interface NoteDao {
 
     @Update
     suspend fun update(note: Note)
+
+    @Delete
+    suspend fun delete(note: Note)
 
     @Query("SELECT * FROM notes")
     fun getAllNotes(): Flow<List<Note>>

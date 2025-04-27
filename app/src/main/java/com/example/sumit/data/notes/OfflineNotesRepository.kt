@@ -12,4 +12,6 @@ class OfflineNotesRepository : NotesRepository {
     override suspend fun addNote(note: Note) {}
 
     override suspend fun updateNote(note: Note) {}
+
+    override suspend fun deleteNote(note: Note) {}
 }

@@ -58,7 +58,7 @@ fun MyNotesTab(
                 note = note,
                 onNoteClick = { onViewNote(note.id) },
                 onEditClick = { onEditNote(note.id) },
-                onDeleteClick = { }
+                onDeleteClick = { viewModel.deleteNote(note) }
             )
         }
     }

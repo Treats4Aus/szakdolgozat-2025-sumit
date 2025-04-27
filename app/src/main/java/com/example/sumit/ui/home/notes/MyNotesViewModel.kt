@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MyNotesViewModel(notesRepository: NotesRepository) : ViewModel() {
+class MyNotesViewModel(private val notesRepository: NotesRepository) : ViewModel() {
     val myNotesUiState: StateFlow<MyNotesUiState> = notesRepository
         .getAllNotesStream()
         .map { MyNotesUiState(it) }
@@ -19,6 +20,10 @@ class MyNotesViewModel(notesRepository: NotesRepository) : ViewModel() {
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
             initialValue = MyNotesUiState()
         )
+
+    fun deleteNote(note: Note) = viewModelScope.launch {
+        notesRepository.deleteNote(note)
+    }
 }
 
 data class MyNotesUiState(val myNotes: List<Note> = listOf())
