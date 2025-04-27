@@ -36,7 +36,7 @@ import com.example.sumit.data.notes.Note
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
-import com.example.sumit.ui.common.EditNoteScreen
+import com.example.sumit.ui.common.EditNoteForm
 import com.example.sumit.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
@@ -146,8 +146,8 @@ fun ProcessedNoteEditScreen(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        EditNoteScreen(
-            processedNote = processedNote,
+        EditNoteForm(
+            note = processedNote,
             onTitleEdit = onTitleEdit,
             onContentEdit = onContentEdit,
             modifier = Modifier

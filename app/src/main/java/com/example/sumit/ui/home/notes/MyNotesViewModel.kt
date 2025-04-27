@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.notes.Note
 import com.example.sumit.data.notes.NotesRepository
+import com.example.sumit.utils.TIMEOUT_MILLIS
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MyNotesViewModel(notesRepository: NotesRepository) : ViewModel() {
+class MyNotesViewModel(private val notesRepository: NotesRepository) : ViewModel() {
     val myNotesUiState: StateFlow<MyNotesUiState> = notesRepository
         .getAllNotesStream()
         .map { MyNotesUiState(it) }
@@ -19,8 +21,8 @@ class MyNotesViewModel(notesRepository: NotesRepository) : ViewModel() {
             initialValue = MyNotesUiState()
         )
 
-    companion object {
-        private const val TIMEOUT_MILLIS = 5_000L
+    fun deleteNote(note: Note) = viewModelScope.launch {
+        notesRepository.deleteNote(note)
     }
 }
 

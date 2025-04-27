@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +40,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.sumit.R
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.home.notes.MyNotesTab
@@ -47,7 +47,7 @@ import com.example.sumit.ui.navigation.NavigationDestination
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
-    override val titleRes = R.string.home
+    override val titleRes = R.string.app_name
 }
 
 enum class HomeTab {
@@ -63,9 +63,11 @@ private data class NavigationItemContent(
 @Composable
 fun HomeScreen(
     onNewScan: (Boolean) -> Unit,
+    onViewNote: (Int) -> Unit,
+    onEditNote: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var currentTab by remember { mutableStateOf(HomeTab.Recent) }
+    var currentTab by rememberSaveable { mutableStateOf(HomeTab.Recent) }
     var expanded by remember { mutableStateOf(false) }
 
     val navigationItemContentList = listOf(
@@ -121,7 +123,11 @@ fun HomeScreen(
                 Text(text = "Home", style = MaterialTheme.typography.displayMedium)
                 when (currentTab) {
                     HomeTab.Recent -> RecentNotesTab()
-                    HomeTab.Notes -> MyNotesTab()
+                    HomeTab.Notes -> MyNotesTab(
+                        onViewNote = onViewNote,
+                        onEditNote = onEditNote
+                    )
+
                     HomeTab.Profile -> ProfileTab()
                 }
             }
@@ -214,10 +220,4 @@ private fun SumItBottomNavigationBar(
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun HomeScreenPreview() {
-    HomeScreen(onNewScan = { })
 }

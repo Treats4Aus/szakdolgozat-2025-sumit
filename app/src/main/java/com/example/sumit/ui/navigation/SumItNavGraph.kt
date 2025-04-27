@@ -14,6 +14,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.sumit.ui.home.HomeDestination
 import com.example.sumit.ui.home.HomeScreen
+import com.example.sumit.ui.notes.EditNoteDestination
+import com.example.sumit.ui.notes.EditNoteScreen
+import com.example.sumit.ui.notes.ViewNoteDestination
+import com.example.sumit.ui.notes.ViewNoteScreen
 import com.example.sumit.ui.scan.PhotoProcessDestination
 import com.example.sumit.ui.scan.PhotoProcessScreen
 import com.example.sumit.ui.scan.PhotoSegmentDestination
@@ -48,9 +52,17 @@ fun SumItNavHost(
         }
     ) {
         composable(route = HomeDestination.route) {
-            HomeScreen(onNewScan = {
-                navController.navigate("${PhotoSelectDestination.route}/$it")
-            })
+            HomeScreen(
+                onNewScan = {
+                    navController.navigate("${PhotoSelectDestination.route}/$it")
+                },
+                onViewNote = {
+                    navController.navigate("${ViewNoteDestination.route}/$it")
+                },
+                onEditNote = {
+                    navController.navigate("${EditNoteDestination.route}/$it")
+                }
+            )
         }
 
         composable(
@@ -81,6 +93,28 @@ fun SumItNavHost(
                         inclusive = false
                     )
                 }
+            )
+        }
+
+        composable(
+            route = ViewNoteDestination.routeWithArgs,
+            arguments = listOf(navArgument(ViewNoteDestination.noteIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            ViewNoteScreen(
+                onBack = { navController.navigateUp() }
+            )
+        }
+
+        composable(
+            route = EditNoteDestination.routeWithArgs,
+            arguments = listOf(navArgument(EditNoteDestination.noteIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            EditNoteScreen(
+                onBack = { navController.navigateUp() }
             )
         }
     }
