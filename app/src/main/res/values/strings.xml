@@ -30,6 +30,7 @@
     <string name="content">Content</string>
     <string name="save_note">Save note</string>
     <string name="view_note">View note</string>
+    <string name="edit_note">Edit note</string>
     <string name="note">Note</string>
     <string name="summary">Summary</string>
 </resources>

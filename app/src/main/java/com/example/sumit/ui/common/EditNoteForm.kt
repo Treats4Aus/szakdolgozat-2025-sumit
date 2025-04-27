@@ -14,8 +14,8 @@ import com.example.sumit.R
 import com.example.sumit.data.notes.Note
 
 @Composable
-fun EditNoteScreen(
-    processedNote: Note,
+fun EditNoteForm(
+    note: Note,
     onTitleEdit: (String) -> Unit,
     onContentEdit: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -25,13 +25,13 @@ fun EditNoteScreen(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
     ) {
         OutlinedTextField(
-            value = processedNote.title,
+            value = note.title,
             onValueChange = onTitleEdit,
             label = { Text(stringResource(R.string.title)) }
         )
 
         OutlinedTextField(
-            value = processedNote.content,
+            value = note.content,
             onValueChange = onContentEdit,
             label = { Text(stringResource(R.string.content)) }
         )
