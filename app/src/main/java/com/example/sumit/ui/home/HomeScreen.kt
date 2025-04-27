@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +67,7 @@ fun HomeScreen(
     onEditNote: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var currentTab by remember { mutableStateOf(HomeTab.Recent) }
+    var currentTab by rememberSaveable { mutableStateOf(HomeTab.Recent) }
     var expanded by remember { mutableStateOf(false) }
 
     val navigationItemContentList = listOf(
