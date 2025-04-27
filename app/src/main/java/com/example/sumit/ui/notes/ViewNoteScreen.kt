@@ -31,7 +31,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -103,9 +102,11 @@ fun ViewNoteScreen(
                 }
             }
 
-            ViewSwitcher(
-                showingSummary = showingSummary,
-                onModeSwitch = { showingSummary = it }
+            OptionSwitcher(
+                firstOptionText = stringResource(R.string.note),
+                secondOptionText = stringResource(R.string.summary),
+                secondOptionSelected = showingSummary,
+                onOptionSwitch = { showingSummary = it }
             )
         }
     }
@@ -146,31 +147,33 @@ fun NoteSummary(
 }
 
 @Composable
-fun ViewSwitcher(
-    showingSummary: Boolean,
-    onModeSwitch: (Boolean) -> Unit,
+fun OptionSwitcher(
+    firstOptionText: String,
+    secondOptionText: String,
+    secondOptionSelected: Boolean,
+    onOptionSwitch: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val noteButtonContainerColor = animateColorAsState(
-        if (showingSummary)
+        if (secondOptionSelected)
             MaterialTheme.colorScheme.primaryContainer
         else
             MaterialTheme.colorScheme.primary
     )
     val noteButtonContentColor = animateColorAsState(
-        if (showingSummary)
+        if (secondOptionSelected)
             MaterialTheme.colorScheme.onPrimaryContainer
         else
             MaterialTheme.colorScheme.onPrimary
     )
     val summaryButtonContainerColor = animateColorAsState(
-        if (showingSummary)
+        if (secondOptionSelected)
             MaterialTheme.colorScheme.primary
         else
             MaterialTheme.colorScheme.primaryContainer
     )
     val summaryButtonContentColor = animateColorAsState(
-        if (showingSummary)
+        if (secondOptionSelected)
             MaterialTheme.colorScheme.onPrimary
         else
             MaterialTheme.colorScheme.onPrimaryContainer
@@ -184,7 +187,7 @@ fun ViewSwitcher(
         horizontalArrangement = Arrangement.Center
     ) {
         Button(
-            onClick = { onModeSwitch(false) },
+            onClick = { onOptionSwitch(false) },
             modifier = Modifier
                 .weight(1f)
                 .padding(start = dimensionResource(R.dimen.small_padding)),
@@ -193,13 +196,13 @@ fun ViewSwitcher(
                 contentColor = noteButtonContentColor.value
             )
         ) {
-            Text(stringResource(R.string.note))
+            Text(firstOptionText)
         }
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Button(
-            onClick = { onModeSwitch(true) },
+            onClick = { onOptionSwitch(true) },
             modifier = Modifier
                 .weight(1f)
                 .padding(end = dimensionResource(R.dimen.small_padding)),
@@ -208,7 +211,7 @@ fun ViewSwitcher(
                 contentColor = summaryButtonContentColor.value
             )
         ) {
-            Text(stringResource(R.string.summary))
+            Text(secondOptionText)
         }
     }
 }
@@ -216,8 +219,10 @@ fun ViewSwitcher(
 @Preview(showBackground = true)
 @Composable
 private fun ViewSwitcherPreview() {
-    ViewSwitcher(
-        showingSummary = false,
-        onModeSwitch = { }
+    OptionSwitcher(
+        firstOptionText = "First",
+        secondOptionText = "Second",
+        secondOptionSelected = false,
+        onOptionSwitch = { }
     )
 }
