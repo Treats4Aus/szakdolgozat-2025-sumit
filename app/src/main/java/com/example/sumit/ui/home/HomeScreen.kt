@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.sumit.R
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.home.notes.MyNotesTab
+import com.example.sumit.ui.home.recent.RecentNotesTab
 import com.example.sumit.ui.navigation.NavigationDestination
 
 object HomeDestination : NavigationDestination {
@@ -120,9 +121,12 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                Text(text = "Home", style = MaterialTheme.typography.displayMedium)
                 when (currentTab) {
-                    HomeTab.Recent -> RecentNotesTab()
+                    HomeTab.Recent -> RecentNotesTab(
+                        onViewOwnedNote = onViewNote,
+                        onViewSharedNote = { }
+                    )
+
                     HomeTab.Notes -> MyNotesTab(
                         onViewNote = onViewNote,
                         onEditNote = onEditNote

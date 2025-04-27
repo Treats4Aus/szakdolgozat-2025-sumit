@@ -33,4 +33,12 @@
     <string name="edit_note">Edit note</string>
     <string name="note">Note</string>
     <string name="summary">Summary</string>
+
+    <string name="recent_notes">Recent notes</string>
+    <string name="shared_with_you">Shared with you</string>
+    <string name="no_recent_notes">You don\'t have any recent notes</string>
+    <string name="use_scan_button">Use the scan button to create one now</string>
+    <string name="no_shared_notes">You don\'t have any shared notes</string>
+    <string name="sign_in_or_create_account">Sign in or create an account to start sharing notes</string>
+    <string name="add_friends">Add friends and start sharing notes</string>
 </resources>

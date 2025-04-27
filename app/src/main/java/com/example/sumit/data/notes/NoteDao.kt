@@ -22,6 +22,9 @@ interface NoteDao {
     @Query("SELECT * FROM notes")
     fun getAllNotes(): Flow<List<Note>>
 
+    @Query("SELECT * FROM notes ORDER BY last_modified DESC LIMIT 3")
+    fun getRecentNotes(): Flow<List<Note>>
+
     @Query("SELECT * FROM notes WHERE id = :id")
     fun getNote(id: Int): Flow<Note>
 }
