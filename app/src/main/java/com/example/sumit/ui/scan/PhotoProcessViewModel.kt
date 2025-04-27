@@ -15,6 +15,7 @@ import com.example.sumit.utils.TAG_RECOGNITION_WORKER
 import com.example.sumit.utils.TAG_REFINING_WORKER
 import com.example.sumit.utils.TAG_STRUCTURING_WORKER
 import com.example.sumit.utils.TAG_SUMMARY_WORKER
+import com.example.sumit.utils.TIMEOUT_MILLIS
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,7 +75,7 @@ class PhotoProcessViewModel(
         .debounce(1_000L)
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5_000L),
+            SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
             ProcessState.INITIALIZING
         )
 

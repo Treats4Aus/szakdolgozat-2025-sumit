@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.notes.Note
 import com.example.sumit.data.notes.NotesRepository
+import com.example.sumit.utils.TIMEOUT_MILLIS
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -18,10 +19,6 @@ class MyNotesViewModel(notesRepository: NotesRepository) : ViewModel() {
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
             initialValue = MyNotesUiState()
         )
-
-    companion object {
-        private const val TIMEOUT_MILLIS = 5_000L
-    }
 }
 
 data class MyNotesUiState(val myNotes: List<Note> = listOf())
