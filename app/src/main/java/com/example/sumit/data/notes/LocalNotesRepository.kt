@@ -6,4 +6,6 @@ class LocalNotesRepository(private val noteDao: NoteDao) : NotesRepository {
     override fun getAllNotesStream(): Flow<List<Note>> = noteDao.getAllNotes()
 
     override fun getNoteStream(id: Int): Flow<Note> = noteDao.getNote(id)
+
+    override suspend fun addNote(note: Note) = noteDao.insert(note)
 }

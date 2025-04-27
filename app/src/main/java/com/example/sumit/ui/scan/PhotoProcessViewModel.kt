@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import com.example.sumit.R
 import com.example.sumit.data.notes.Note
+import com.example.sumit.data.notes.NotesRepository
 import com.example.sumit.data.photos.PhotosRepository
 import com.example.sumit.utils.KEY_NOTE_TEXT
 import com.example.sumit.utils.KEY_SUMMARY_TEXT
@@ -15,6 +16,7 @@ import com.example.sumit.utils.TAG_REFINING_WORKER
 import com.example.sumit.utils.TAG_STRUCTURING_WORKER
 import com.example.sumit.utils.TAG_SUMMARY_WORKER
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,16 +28,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.util.Date
 
-class PhotoProcessViewModel(private val photosRepository: PhotosRepository) : ViewModel() {
+class PhotoProcessViewModel(
+    private val photosRepository: PhotosRepository,
+    private val notesRepository: NotesRepository
+) : ViewModel() {
     @OptIn(FlowPreview::class)
     val processState: StateFlow<ProcessState> = photosRepository.processingWorkData.map { infos ->
         val runningWork = infos.find { it.state == WorkInfo.State.RUNNING }
         if (runningWork == null) {
             infos.find { it.tags.contains(TAG_SUMMARY_WORKER) }?.let {
                 if (it.state == WorkInfo.State.SUCCEEDED) {
-                    val content = it.outputData.getString(KEY_NOTE_TEXT) ?: ""
+                    val text = it.outputData.getString(KEY_NOTE_TEXT) ?: ""
                     val summary = it.outputData.getString(KEY_SUMMARY_TEXT) ?: ""
-                    val title = content.split("\n").firstOrNull() ?: ""
+
+                    val title = text.split("\n").firstOrNull() ?: ""
+                    val content = text.split("\n").drop(1).joinToString("\n")
 
                     _processedNote.value = Note(
                         created = Date(),
@@ -74,6 +81,9 @@ class PhotoProcessViewModel(private val photosRepository: PhotosRepository) : Vi
     private val _processedNote = MutableStateFlow<Note?>(null)
     val processedNote = _processedNote.asStateFlow()
 
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving = _isSaving.asStateFlow()
+
     fun updateTitle(newTitle: String) {
         _processedNote.update { currentState ->
             currentState?.copy(
@@ -87,6 +97,15 @@ class PhotoProcessViewModel(private val photosRepository: PhotosRepository) : Vi
             currentState?.copy(
                 content = newContent
             )
+        }
+    }
+
+    suspend fun saveNote() {
+        if (_processedNote.value != null) {
+            _isSaving.value = true
+            delay(2_000L)
+            notesRepository.addNote(_processedNote.value!!)
+            _isSaving.value = false
         }
     }
 }

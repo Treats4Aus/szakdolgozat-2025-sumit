@@ -8,4 +8,6 @@ class OfflineNotesRepository : NotesRepository {
     override fun getAllNotesStream(): Flow<List<Note>> = flowOf(DataSource.notes)
 
     override fun getNoteStream(id: Int): Flow<Note> = flowOf(DataSource.notes[id])
+
+    override suspend fun addNote(note: Note) {}
 }

@@ -1,6 +1,9 @@
 package com.example.sumit.ui.scan
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -13,15 +16,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -32,7 +38,9 @@ import com.example.sumit.R
 import com.example.sumit.data.notes.Note
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
+import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
 
 private const val TAG = "PhotoProcessScreen"
 
@@ -44,18 +52,15 @@ object PhotoProcessDestination : NavigationDestination {
 @Composable
 fun PhotoProcessScreen(
     onCancel: () -> Unit,
-    onProcessingDone: () -> Unit,
+    onSavingDone: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PhotoProcessViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val processState by viewModel.processState.collectAsState()
     val processedNote by viewModel.processedNote.collectAsState()
+    val isSaving by viewModel.isSaving.collectAsState()
 
-    LaunchedEffect(processState) {
-        if (processState == ProcessState.DONE) {
-            onProcessingDone()
-        }
-    }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -72,15 +77,32 @@ fun PhotoProcessScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (processState == ProcessState.DONE && processedNote != null) {
+            AnimatedVisibility(
+                visible = processState == ProcessState.DONE && processedNote != null,
+                exit = fadeOut()
+            ) {
                 ProcessedNoteEditScreen(
                     processedNote = processedNote!!,
                     onTitleEdit = viewModel::updateTitle,
                     onContentEdit = viewModel::updateContent,
-                    onSaveNote = { }
+                    onSaveNote = {
+                        scope.launch {
+                            viewModel.saveNote()
+                            onSavingDone()
+                        }
+                    }
                 )
-            } else {
+            }
+
+            AnimatedVisibility(
+                visible = processState != ProcessState.DONE || processedNote == null,
+                enter = fadeIn()
+            ) {
                 ProcessingScreen(processState = processState)
+            }
+
+            AnimatedVisibility(visible = isSaving, enter = fadeIn(), exit = fadeOut()) {
+                CircularLoadingScreenWithBackdrop()
             }
         }
     }
@@ -92,7 +114,7 @@ fun ProcessingScreen(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -126,18 +148,34 @@ fun ProcessedNoteEditScreen(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        TextField(
-            value = processedNote.title,
-            onValueChange = onTitleEdit
-        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(dimensionResource(R.dimen.medium_padding))
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
+        ) {
+            OutlinedTextField(
+                value = processedNote.title,
+                onValueChange = onTitleEdit,
+                label = { Text(stringResource(R.string.title)) }
+            )
 
-        TextField(
-            value = processedNote.content,
-            onValueChange = onContentEdit
-        )
+            OutlinedTextField(
+                value = processedNote.content,
+                onValueChange = onContentEdit,
+                label = { Text(stringResource(R.string.content)) }
+            )
+        }
 
-        Button(onClick = onSaveNote) {
-            Text("Save note")
+        Box(modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))) {
+            Button(
+                onClick = onSaveNote,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(stringResource(R.string.save_note))
+            }
         }
     }
 }

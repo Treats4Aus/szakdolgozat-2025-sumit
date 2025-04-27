@@ -34,7 +34,8 @@ object AppViewModelProvider {
 
         initializer {
             PhotoProcessViewModel(
-                photosRepository = sumItApplication().container.photosRepository
+                photosRepository = sumItApplication().container.photosRepository,
+                notesRepository = sumItApplication().container.notesRepository
             )
         }
     }

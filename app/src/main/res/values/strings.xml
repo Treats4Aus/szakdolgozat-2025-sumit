@@ -25,4 +25,8 @@
     <string name="refining_text">Refining text</string>
     <string name="creating_note">Creating note</string>
     <string name="generating_keywords">Generating keywords</string>
+
+    <string name="title">Title</string>
+    <string name="content">Content</string>
+    <string name="save_note">Save note</string>
 </resources>
