@@ -14,6 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.sumit.ui.home.HomeDestination
 import com.example.sumit.ui.home.HomeScreen
+import com.example.sumit.ui.notes.ViewNoteDestination
+import com.example.sumit.ui.notes.ViewNoteScreen
 import com.example.sumit.ui.scan.PhotoProcessDestination
 import com.example.sumit.ui.scan.PhotoProcessScreen
 import com.example.sumit.ui.scan.PhotoSegmentDestination
@@ -52,7 +54,9 @@ fun SumItNavHost(
                 onNewScan = {
                     navController.navigate("${PhotoSelectDestination.route}/$it")
                 },
-                onViewNote = { },
+                onViewNote = {
+                    navController.navigate("${ViewNoteDestination.route}/$it")
+                },
                 onEditNote = { }
             )
         }
@@ -85,6 +89,17 @@ fun SumItNavHost(
                         inclusive = false
                     )
                 }
+            )
+        }
+
+        composable(
+            route = ViewNoteDestination.routeWithArgs,
+            arguments = listOf(navArgument(ViewNoteDestination.noteIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            ViewNoteScreen(
+                onBack = { navController.navigateUp() }
             )
         }
     }
