@@ -5,6 +5,7 @@ import Catalano.Imaging.Filters.BradleyLocalThreshold
 import Catalano.Imaging.Filters.GaussianBlur
 import Catalano.Imaging.Filters.Grayscale
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
@@ -33,11 +34,15 @@ class SegmentPhotoWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
                 }
                 val resolver = applicationContext.contentResolver
 
-                val photo = BitmapFactory.decodeStream(
-                    resolver.openInputStream(Uri.parse(photoUri)),
-                    null,
-                    BitmapFactory.Options().apply { inMutable = true }
-                )
+                var photo: Bitmap?
+                resolver.openInputStream(Uri.parse(photoUri)).use { stream ->
+                    photo = BitmapFactory.decodeStream(
+                        stream,
+                        null,
+                        BitmapFactory.Options().apply { inMutable = true }
+                    )
+                }
+
                 val fb = FastBitmap(photo)
 
                 val grayscale = Grayscale()

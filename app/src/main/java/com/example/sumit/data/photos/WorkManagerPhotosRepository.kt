@@ -13,18 +13,32 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OverwritingInputMerger
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.sumit.utils.KEY_PAGE_COUNT
 import com.example.sumit.utils.KEY_PHOTO_INDEX
 import com.example.sumit.utils.KEY_PHOTO_URI
 import com.example.sumit.utils.OUTPUT_PATH
 import com.example.sumit.utils.PHOTO_TYPE_SEGMENTED
 import com.example.sumit.utils.PHOTO_TYPE_TEMP
+import com.example.sumit.utils.PROCESSING_WORK_NAME
 import com.example.sumit.utils.SAVE_PHOTOS_WORK_NAME
+import com.example.sumit.utils.TAG_DOWNLOAD_WORKER
+import com.example.sumit.utils.TAG_RECOGNITION_WORKER
+import com.example.sumit.utils.TAG_REFINING_WORKER
 import com.example.sumit.utils.TAG_SAVE_PHOTO_OUTPUT
+import com.example.sumit.utils.TAG_STRUCTURING_WORKER
+import com.example.sumit.utils.TAG_SUMMARY_WORKER
 import com.example.sumit.workers.CleanupWorker
+import com.example.sumit.workers.ModelDownloadWorker
 import com.example.sumit.workers.SavePhotoToTempWorker
 import com.example.sumit.workers.SegmentPhotoWorker
+import com.example.sumit.workers.SummaryGeneratingWorker
+import com.example.sumit.workers.TextRecognitionWorker
+import com.example.sumit.workers.TextRefiningWorker
+import com.example.sumit.workers.TextStructuringWorker
 import com.example.sumit.workers.writeBitmapToFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -62,22 +76,7 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
         continuation.enqueue()
     }
 
-    override suspend fun getTempPhotos(): List<Uri> = withContext(Dispatchers.IO) {
-        val outputDirectory = File(context.filesDir, OUTPUT_PATH)
-        if (outputDirectory.exists()) {
-            val entries = outputDirectory.listFiles()
-            if (entries != null) {
-                return@withContext entries
-                    .filter {
-                        val name = it.name
-                        name.isNotEmpty() && name.startsWith(PHOTO_TYPE_TEMP) && name.endsWith(".png")
-                    }
-                    .sortedBy { it.name }
-                    .map { it.toUri() }
-            }
-        }
-        return@withContext emptyList()
-    }
+    override suspend fun getTempPhotos(): List<Uri> = getPhotoUrisByType(PHOTO_TYPE_TEMP)
 
     override fun cancelWork() {
         workManager.cancelUniqueWork(SAVE_PHOTOS_WORK_NAME)
@@ -129,10 +128,75 @@ class WorkManagerPhotosRepository(private val context: Context) : PhotosReposito
             writeBitmapToFile(context, photo, PHOTO_TYPE_SEGMENTED, index)
         }
 
+    override val processingWorkData: Flow<List<WorkInfo>> =
+        workManager.getWorkInfosForUniqueWorkFlow(PROCESSING_WORK_NAME)
+
+    override suspend fun startProcessing() {
+        val segmentedPhotoUris = getPhotoUrisByType(PHOTO_TYPE_SEGMENTED)
+
+        val downloadWorker = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
+            .addTag(TAG_DOWNLOAD_WORKER)
+            .build()
+
+        var continuation = workManager.beginUniqueWork(
+            PROCESSING_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            downloadWorker
+        )
+
+        val recognitionWorkers = segmentedPhotoUris.mapIndexed { index, photo ->
+            val builder = OneTimeWorkRequestBuilder<TextRecognitionWorker>()
+            builder
+                .setInputData(createInputDataForWorkRequest(index, photo))
+                .addTag(TAG_RECOGNITION_WORKER)
+                .build()
+        }
+        continuation = continuation.then(recognitionWorkers)
+
+        val refiningWorker = OneTimeWorkRequestBuilder<TextRefiningWorker>()
+            .setInputMerger(OverwritingInputMerger::class.java)
+            .setInputData(workDataOf(KEY_PAGE_COUNT to segmentedPhotoUris.size))
+            .addTag(TAG_REFINING_WORKER)
+            .build()
+
+        continuation = continuation.then(refiningWorker)
+
+        val structuringWorker = OneTimeWorkRequestBuilder<TextStructuringWorker>()
+            .addTag(TAG_STRUCTURING_WORKER)
+            .build()
+
+        continuation = continuation.then(structuringWorker)
+
+        val summaryGeneratingWorker = OneTimeWorkRequestBuilder<SummaryGeneratingWorker>()
+            .addTag(TAG_SUMMARY_WORKER)
+            .build()
+
+        continuation = continuation.then(summaryGeneratingWorker)
+
+        continuation.enqueue()
+    }
+
     private fun createInputDataForWorkRequest(index: Int, photoUri: Uri): Data {
         val builder = Data.Builder()
         builder.putInt(KEY_PHOTO_INDEX, index)
         builder.putString(KEY_PHOTO_URI, photoUri.toString())
         return builder.build()
+    }
+
+    private suspend fun getPhotoUrisByType(type: String): List<Uri> = withContext(Dispatchers.IO) {
+        val outputDirectory = File(context.filesDir, OUTPUT_PATH)
+        if (outputDirectory.exists()) {
+            val entries = outputDirectory.listFiles()
+            if (entries != null) {
+                return@withContext entries
+                    .filter {
+                        val name = it.name
+                        name.isNotEmpty() && name.startsWith(type) && name.endsWith(".png")
+                    }
+                    .sortedBy { it.name }
+                    .map { it.toUri() }
+            }
+        }
+        return@withContext emptyList()
     }
 }

@@ -103,6 +103,7 @@ fun PhotoSegmentScreen(
                     Button(
                         onClick = onNextStep,
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = uiState.photos.none { it.isProcessing },
                         shape = MaterialTheme.shapes.small
                     ) {
                         Text(stringResource(R.string.next))

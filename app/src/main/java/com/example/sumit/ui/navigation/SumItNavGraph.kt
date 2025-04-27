@@ -75,7 +75,12 @@ fun SumItNavHost(
         composable(route = PhotoProcessDestination.route) {
             PhotoProcessScreen(
                 onCancel = { navController.navigateUp() },
-                onProcessingDone = { }
+                onSavingDone = {
+                    navController.popBackStack(
+                        route = HomeDestination.route,
+                        inclusive = false
+                    )
+                }
             )
         }
     }
