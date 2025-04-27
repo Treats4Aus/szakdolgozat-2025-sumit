@@ -16,12 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +36,7 @@ import com.example.sumit.data.notes.Note
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
+import com.example.sumit.ui.common.EditNoteScreen
 import com.example.sumit.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
@@ -148,25 +146,14 @@ fun ProcessedNoteEditScreen(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        Column(
+        EditNoteScreen(
+            processedNote = processedNote,
+            onTitleEdit = onTitleEdit,
+            onContentEdit = onContentEdit,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.medium_padding))
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
-        ) {
-            OutlinedTextField(
-                value = processedNote.title,
-                onValueChange = onTitleEdit,
-                label = { Text(stringResource(R.string.title)) }
-            )
-
-            OutlinedTextField(
-                value = processedNote.content,
-                onValueChange = onContentEdit,
-                label = { Text(stringResource(R.string.content)) }
-            )
-        }
+        )
 
         Box(modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))) {
             Button(
