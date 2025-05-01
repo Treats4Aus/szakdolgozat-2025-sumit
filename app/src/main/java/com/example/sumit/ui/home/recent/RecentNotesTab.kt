@@ -2,8 +2,11 @@ package com.example.sumit.ui.home.recent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,17 +30,20 @@ fun RecentNotesTab(
 ) {
     val recentNotes by viewModel.recentNotes.collectAsState()
 
-    Column(
-        modifier = modifier.padding(dimensionResource(R.dimen.medium_padding)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding)),
+        contentPadding = PaddingValues(dimensionResource(R.dimen.medium_padding))
     ) {
-        Text(
-            text = stringResource(R.string.recent_notes),
-            style = MaterialTheme.typography.displayMedium
-        )
+        item {
+            Text(
+                text = stringResource(R.string.recent_notes),
+                style = MaterialTheme.typography.displayMedium
+            )
+        }
 
         if (recentNotes.isNotEmpty()) {
-            recentNotes.forEach {
+            items(recentNotes) {
                 NoteCard(
                     note = it,
                     canModify = false,
@@ -45,15 +51,21 @@ fun RecentNotesTab(
                 )
             }
         } else {
-            NoRecentNotes()
+            item {
+                NoRecentNotes()
+            }
         }
 
-        Text(
-            text = stringResource(R.string.shared_with_you),
-            style = MaterialTheme.typography.displayMedium
-        )
+        item {
+            Text(
+                text = stringResource(R.string.shared_with_you),
+                style = MaterialTheme.typography.displayMedium
+            )
+        }
 
-        NoSharedNotes(isSignedIn = false)
+        item {
+            NoSharedNotes(isSignedIn = false)
+        }
     }
 }
 
