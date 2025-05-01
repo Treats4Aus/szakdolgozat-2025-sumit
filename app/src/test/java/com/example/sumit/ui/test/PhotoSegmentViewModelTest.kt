@@ -27,7 +27,7 @@ import java.util.UUID
 @RunWith(RobolectricTestRunner::class)
 class PhotoSegmentViewModelTest {
     private lateinit var viewModel: PhotoSegmentViewModel
-    private val segmentationWorkInfoMock = MutableSharedFlow<WorkInfo>()
+    private val segmentationWorkDataMock = MutableSharedFlow<WorkInfo>()
     private val photosRepository = mockk<PhotosRepository>(relaxUnitFun = true)
     private val tempUriMock = mockk<Uri>()
     private val workerUUIDMock = mockk<UUID>()
@@ -36,7 +36,7 @@ class PhotoSegmentViewModelTest {
     fun setup() {
         coEvery { photosRepository.getTempPhotos() } returns listOf(tempUriMock)
         every { photosRepository.startSegmentation(any(), any()) } returns workerUUIDMock
-        every { photosRepository.getSegmentationWorkData(any()) } returns segmentationWorkInfoMock
+        every { photosRepository.getSegmentationWorkData(any()) } returns segmentationWorkDataMock
         viewModel = PhotoSegmentViewModel(photosRepository)
     }
 
@@ -56,7 +56,7 @@ class PhotoSegmentViewModelTest {
         every { inProgressWorkInfoMock.outputData.getString(KEY_PHOTO_URI) } returns null
         every { inProgressWorkInfoMock.state.isFinished } returns false
 
-        segmentationWorkInfoMock.emit(inProgressWorkInfoMock)
+        segmentationWorkDataMock.emit(inProgressWorkInfoMock)
 
         var currentUiState = viewModel.uiState.value
         var expectedPhotos = arrayOf(SegmentedPhoto(tempUriMock, true))
@@ -69,7 +69,7 @@ class PhotoSegmentViewModelTest {
         every { succeededWorkInfoMock.outputData.getString(KEY_PHOTO_URI) } returns segmentedUriMock.toString()
         every { succeededWorkInfoMock.state.isFinished } returns true
 
-        segmentationWorkInfoMock.emit(succeededWorkInfoMock)
+        segmentationWorkDataMock.emit(succeededWorkInfoMock)
 
         currentUiState = viewModel.uiState.value
         expectedPhotos = arrayOf(SegmentedPhoto(Uri.parse(segmentedUriMock.toString()), false))
@@ -86,7 +86,7 @@ class PhotoSegmentViewModelTest {
             every { succeededWorkInfoMock.outputData.getString(KEY_PHOTO_URI) } returns segmentedUriMock.toString()
             every { succeededWorkInfoMock.state.isFinished } returns true
 
-            segmentationWorkInfoMock.emit(succeededWorkInfoMock)
+            segmentationWorkDataMock.emit(succeededWorkInfoMock)
 
             val segmentedUriMock2 = mockk<Uri>()
             every { segmentedUriMock2.toString() } returns "segmented2"
@@ -95,7 +95,7 @@ class PhotoSegmentViewModelTest {
             every { succeededWorkInfoMock2.outputData.getString(KEY_PHOTO_URI) } returns segmentedUriMock2.toString()
             every { succeededWorkInfoMock2.state.isFinished } returns true
 
-            segmentationWorkInfoMock.emit(succeededWorkInfoMock2)
+            segmentationWorkDataMock.emit(succeededWorkInfoMock2)
 
             val currentUiState = viewModel.uiState.value
             val expectedPhotos =
