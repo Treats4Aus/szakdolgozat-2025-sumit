@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sumit.SumItApplication
 import com.example.sumit.ui.home.notes.MyNotesViewModel
+import com.example.sumit.ui.home.recent.RecentNotesViewModel
 import com.example.sumit.ui.notes.EditNoteViewModel
 import com.example.sumit.ui.notes.ViewNoteViewModel
 import com.example.sumit.ui.scan.PhotoProcessViewModel
@@ -15,6 +16,12 @@ import com.example.sumit.ui.scan.PhotoSelectViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer {
+            RecentNotesViewModel(
+                notesRepository = sumItApplication().container.notesRepository
+            )
+        }
+
         initializer {
             MyNotesViewModel(
                 notesRepository = sumItApplication().container.notesRepository

@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.flowOf
 class OfflineNotesRepository : NotesRepository {
     override fun getAllNotesStream(): Flow<List<Note>> = flowOf(DataSource.notes)
 
+    override fun getRecentNotesStream(): Flow<List<Note>> = flowOf(DataSource.notes.take(3))
+
     override fun getNoteStream(id: Int): Flow<Note> = flowOf(DataSource.notes[id])
 
     override suspend fun addNote(note: Note) {}
