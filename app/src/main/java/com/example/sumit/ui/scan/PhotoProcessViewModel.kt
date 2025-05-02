@@ -17,7 +17,6 @@ import com.example.sumit.utils.TAG_STRUCTURING_WORKER
 import com.example.sumit.utils.TAG_SUMMARY_WORKER
 import com.example.sumit.utils.TIMEOUT_MILLIS
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,41 +33,42 @@ class PhotoProcessViewModel(
     private val notesRepository: NotesRepository
 ) : ViewModel() {
     @OptIn(FlowPreview::class)
-    val processState: StateFlow<ProcessState> = photosRepository.processingWorkData.map { infos ->
-        val runningWork = infos.find { it.state == WorkInfo.State.RUNNING }
-        if (runningWork == null) {
-            infos.find { it.tags.contains(TAG_SUMMARY_WORKER) }?.let {
-                if (it.state == WorkInfo.State.SUCCEEDED) {
-                    val text = it.outputData.getString(KEY_NOTE_TEXT) ?: ""
-                    val summary = it.outputData.getString(KEY_SUMMARY_TEXT) ?: ""
+    val processState: StateFlow<ProcessState> = photosRepository.processingWorkData
+        .map { infos ->
+            val runningWork = infos.find { it.state == WorkInfo.State.RUNNING }
+            if (runningWork == null) {
+                infos.find { it.tags.contains(TAG_SUMMARY_WORKER) }?.let {
+                    if (it.state == WorkInfo.State.SUCCEEDED) {
+                        val text = it.outputData.getString(KEY_NOTE_TEXT) ?: ""
+                        val summary = it.outputData.getString(KEY_SUMMARY_TEXT) ?: ""
 
-                    val title = text.split("\n").firstOrNull() ?: ""
-                    val content = text.split("\n").drop(1).joinToString("\n")
+                        val title = text.split("\n").firstOrNull() ?: ""
+                        val content = text.split("\n").drop(1).joinToString("\n")
 
-                    _processedNote.value = Note(
-                        created = Date(),
-                        lastModified = Date(),
-                        title = title,
-                        content = content,
-                        summary = summary
-                    )
+                        _processedNote.value = Note(
+                            created = Date(),
+                            lastModified = Date(),
+                            title = title,
+                            content = content,
+                            summary = summary
+                        )
 
-                    return@map ProcessState.DONE
+                        return@map ProcessState.DONE
+                    }
                 }
+                return@map ProcessState.INITIALIZING
             }
-            return@map ProcessState.INITIALIZING
-        }
 
-        val workerTags = runningWork.tags
-        when {
-            workerTags.contains(TAG_DOWNLOAD_WORKER) -> ProcessState.DOWNLOADING
-            workerTags.contains(TAG_RECOGNITION_WORKER) -> ProcessState.RECOGNIZING
-            workerTags.contains(TAG_REFINING_WORKER) -> ProcessState.REFINING
-            workerTags.contains(TAG_STRUCTURING_WORKER) -> ProcessState.CREATING
-            workerTags.contains(TAG_SUMMARY_WORKER) -> ProcessState.GENERATING
-            else -> ProcessState.INITIALIZING
+            val workerTags = runningWork.tags
+            when {
+                workerTags.contains(TAG_DOWNLOAD_WORKER) -> ProcessState.DOWNLOADING
+                workerTags.contains(TAG_RECOGNITION_WORKER) -> ProcessState.RECOGNIZING
+                workerTags.contains(TAG_REFINING_WORKER) -> ProcessState.REFINING
+                workerTags.contains(TAG_STRUCTURING_WORKER) -> ProcessState.CREATING
+                workerTags.contains(TAG_SUMMARY_WORKER) -> ProcessState.GENERATING
+                else -> ProcessState.INITIALIZING
+            }
         }
-    }
         .onStart {
             photosRepository.startProcessing()
         }
@@ -104,7 +104,6 @@ class PhotoProcessViewModel(
     suspend fun saveNote() {
         if (_processedNote.value != null) {
             _isSaving.value = true
-            delay(2_000L)
             notesRepository.addNote(_processedNote.value!!)
             _isSaving.value = false
         }

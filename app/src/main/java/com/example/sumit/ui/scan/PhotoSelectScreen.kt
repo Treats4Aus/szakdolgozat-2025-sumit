@@ -1,7 +1,11 @@
 package com.example.sumit.ui.scan
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -57,8 +61,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.HapticFeedbackConstantsCompat
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -117,6 +122,8 @@ fun PhotoSelectScreen(
                 }
                 if (isUriValid) {
                     viewModel.addPhotoFromCamera()
+                } else {
+                    Log.d(TAG, "Invalid uri: ${uiState.cameraPhotoUri}")
                 }
             }
         }
@@ -124,7 +131,7 @@ fun PhotoSelectScreen(
     val permissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
-                viewModel.launchCamera(context, cameraLauncher)
+                launchCamera(viewModel, context, cameraLauncher)
             }
         }
 
@@ -136,7 +143,13 @@ fun PhotoSelectScreen(
 
         if (uiState.useCamera != null) {
             if (uiState.useCamera == true) {
-                viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+                val permissionCheckResult =
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                    launchCamera(viewModel, context, cameraLauncher)
+                } else {
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                }
             } else {
                 pickMediaLauncher
                     .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -183,7 +196,13 @@ fun PhotoSelectScreen(
                         )
                     },
                     onCameraClick = {
-                        viewModel.checkCameraPermission(context, permissionLauncher, cameraLauncher)
+                        val permissionCheckResult =
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                            launchCamera(viewModel, context, cameraLauncher)
+                        } else {
+                            permissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
                     },
                     onContinueClick = {
                         viewModel.savePhotosToTemp()
@@ -442,8 +461,16 @@ fun BottomSheetOption(
     }
 }
 
-@Preview
-@Composable
-private fun PhotoSelectScreenPreview() {
-    PhotoSelectScreen(onCancel = { }, onNextStep = { })
+private fun launchCamera(
+    viewModel: PhotoSelectViewModel,
+    context: Context,
+    launcher: ManagedActivityResultLauncher<Uri, Boolean>
+) {
+    val cameraPhotoUri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.provider",
+        context.createImageFile()
+    )
+    viewModel.updateCameraPhotoUri(cameraPhotoUri)
+    launcher.launch(cameraPhotoUri)
 }

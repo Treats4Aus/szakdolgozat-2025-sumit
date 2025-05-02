@@ -93,7 +93,12 @@ dependencies {
     // Catalano
     implementation(fileTree(mapOf("dir" to "libs", "include" to "*.jar")))
 
+    // Unit testing
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

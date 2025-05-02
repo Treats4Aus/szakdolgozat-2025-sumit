@@ -1,14 +1,10 @@
 package com.example.sumit.ui.scan
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -130,31 +126,12 @@ class PhotoSelectViewModel(
         }
     }
 
-    fun checkCameraPermission(
-        context: Context,
-        permissionLauncher: ManagedActivityResultLauncher<String, Boolean>,
-        cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>
-    ) {
-        val permissionCheckResult =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-            launchCamera(context, cameraLauncher)
-        } else {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
-
-    fun launchCamera(context: Context, launcher: ManagedActivityResultLauncher<Uri, Boolean>) {
+    fun updateCameraPhotoUri(uri: Uri) {
         _uiState.update { currentState ->
             currentState.copy(
-                cameraPhotoUri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider",
-                    context.createImageFile()
-                )
+                cameraPhotoUri = uri
             )
         }
-        launcher.launch(_uiState.value.cameraPhotoUri)
     }
 
     fun disableDefaultLaunch() {
