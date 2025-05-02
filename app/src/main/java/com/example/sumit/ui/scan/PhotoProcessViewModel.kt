@@ -16,11 +16,12 @@ import com.example.sumit.utils.TAG_REFINING_WORKER
 import com.example.sumit.utils.TAG_STRUCTURING_WORKER
 import com.example.sumit.utils.TAG_SUMMARY_WORKER
 import com.example.sumit.utils.TIMEOUT_MILLIS
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -31,6 +32,7 @@ class PhotoProcessViewModel(
     private val photosRepository: PhotosRepository,
     private val notesRepository: NotesRepository
 ) : ViewModel() {
+    @OptIn(FlowPreview::class)
     val processState: StateFlow<ProcessState> = photosRepository.processingWorkData
         .map { infos ->
             val runningWork = infos.find { it.state == WorkInfo.State.RUNNING }
@@ -70,6 +72,7 @@ class PhotoProcessViewModel(
         .onStart {
             photosRepository.startProcessing()
         }
+        .debounce(1_000L)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
@@ -101,7 +104,6 @@ class PhotoProcessViewModel(
     suspend fun saveNote() {
         if (_processedNote.value != null) {
             _isSaving.value = true
-            delay(2_000L)
             notesRepository.addNote(_processedNote.value!!)
             _isSaving.value = false
         }
