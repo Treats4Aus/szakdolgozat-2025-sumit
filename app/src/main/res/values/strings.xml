@@ -41,4 +41,10 @@
     <string name="no_shared_notes">You don\'t have any shared notes</string>
     <string name="sign_in_or_create_account">Sign in or create an account to start sharing notes</string>
     <string name="add_friends">Add friends and start sharing notes</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="no_account_question">Don\'t have an account?</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
 </resources>
