@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
+import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.common.OutlinedPasswordField
 import com.example.sumit.ui.navigation.NavigationDestination
@@ -41,9 +43,15 @@ object RegisterDestination : NavigationDestination {
 fun RegisterScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: RegistrationViewModel = viewModel()
+    viewModel: RegistrationViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val registrationUiState by viewModel.registrationUiState.collectAsState()
+
+    LaunchedEffect(registrationUiState.state) {
+        if (registrationUiState.state == RegistrationState.Finished) {
+            onBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -70,7 +78,7 @@ fun RegisterScreen(
             )
 
             RegistrationForm(
-                uiState = registrationUiState,
+                uiState = registrationUiState.form,
                 onEmailChange = viewModel::updateEmail,
                 onNameChange = viewModel::updateName,
                 onUserNameChange = viewModel::updateUsername,
