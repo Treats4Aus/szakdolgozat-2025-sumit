@@ -1,11 +1,17 @@
 package com.example.sumit.ui.home.profile
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -13,9 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,9 +60,10 @@ fun RegisterScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(dimensionResource(R.dimen.medium_padding))
+                .verticalScroll(rememberScrollState())
         ) {
             Text(
-                text = "Sign up to SumIt",
+                text = stringResource(R.string.sign_up_to_sumit),
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.displayLarge,
                 textAlign = TextAlign.Center
@@ -66,7 +75,8 @@ fun RegisterScreen(
                 onNameChange = viewModel::updateName,
                 onUserNameChange = viewModel::updateUsername,
                 onPasswordChange = viewModel::updatePassword,
-                onPasswordConfirmChange = viewModel::updatePasswordConfirm
+                onPasswordConfirmChange = viewModel::updatePasswordConfirm,
+                onSubmit = viewModel::registerWithEmailAndPassword
             )
         }
     }
@@ -80,9 +90,13 @@ fun RegistrationForm(
     onUserNameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onPasswordConfirmChange: (String) -> Unit,
+    onSubmit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier.padding(horizontal = dimensionResource(R.dimen.large_padding)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
+    ) {
         Text(
             text = stringResource(R.string.email_address)
         )
@@ -90,7 +104,9 @@ fun RegistrationForm(
         OutlinedTextField(
             value = uiState.email,
             onValueChange = onEmailChange,
-            singleLine = true
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
         Text(
@@ -100,6 +116,7 @@ fun RegistrationForm(
         OutlinedTextField(
             value = uiState.name,
             onValueChange = onNameChange,
+            modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
@@ -110,6 +127,7 @@ fun RegistrationForm(
         OutlinedTextField(
             value = uiState.username,
             onValueChange = onUserNameChange,
+            modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
@@ -120,6 +138,7 @@ fun RegistrationForm(
         OutlinedPasswordField(
             password = uiState.password,
             onPasswordChange = onPasswordChange,
+            modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
 
@@ -130,8 +149,19 @@ fun RegistrationForm(
         OutlinedPasswordField(
             password = uiState.passwordConfirm,
             onPasswordChange = onPasswordConfirmChange,
+            modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+
+        Button(
+            onClick = onSubmit,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .width(dimensionResource(R.dimen.form_button_width)),
+            shape = MaterialTheme.shapes.small
+        ) {
+            Text(stringResource(R.string.create_account))
+        }
     }
 }
 
@@ -152,6 +182,7 @@ private fun RegisterFormPreview() {
         onNameChange = { },
         onUserNameChange = { },
         onPasswordChange = { },
-        onPasswordConfirmChange = { }
+        onPasswordConfirmChange = { },
+        onSubmit = { }
     )
 }

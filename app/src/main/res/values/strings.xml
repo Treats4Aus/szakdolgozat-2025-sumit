@@ -51,4 +51,6 @@
     <string name="name">Name</string>
     <string name="username">Username</string>
     <string name="password_confirm">Password confirm</string>
+    <string name="create_account">Create account</string>
+    <string name="sign_up_to_sumit">Sign up to SumIt</string>
 </resources>
