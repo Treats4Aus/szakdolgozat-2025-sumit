@@ -37,6 +37,7 @@ import com.example.sumit.ui.common.OutlinedPasswordField
 
 @Composable
 fun ProfileTab(
+    onRegister: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = viewModel()
 ) {
@@ -51,7 +52,8 @@ fun ProfileTab(
                 uiState = loginUiState,
                 onEmailChange = viewModel::updateEmail,
                 onPasswordChange = viewModel::updatePassword,
-                onLogin = viewModel::signInWithEmailAndPassword
+                onLogin = viewModel::signInWithEmailAndPassword,
+                onRegister = onRegister
             )
         }
     }
@@ -195,6 +197,7 @@ fun AnonymousScreen(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLogin: () -> Unit,
+    onRegister: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -228,7 +231,7 @@ fun AnonymousScreen(
         )
 
         Button(
-            onClick = { },
+            onClick = onRegister,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .width(dimensionResource(R.dimen.form_button_width))
@@ -313,6 +316,7 @@ private fun AnonymousPreview() {
         ),
         onEmailChange = { },
         onPasswordChange = { },
-        onLogin = { }
+        onLogin = { },
+        onRegister = { }
     )
 }

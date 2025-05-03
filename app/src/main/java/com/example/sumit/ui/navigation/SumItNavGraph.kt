@@ -14,6 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.sumit.ui.home.HomeDestination
 import com.example.sumit.ui.home.HomeScreen
+import com.example.sumit.ui.home.profile.RegisterDestination
+import com.example.sumit.ui.home.profile.RegisterScreen
 import com.example.sumit.ui.notes.EditNoteDestination
 import com.example.sumit.ui.notes.EditNoteScreen
 import com.example.sumit.ui.notes.ViewNoteDestination
@@ -61,8 +63,15 @@ fun SumItNavHost(
                 },
                 onEditNote = {
                     navController.navigate("${EditNoteDestination.route}/$it")
+                },
+                onRegister = {
+                    navController.navigate(RegisterDestination.route)
                 }
             )
+        }
+
+        composable(route = RegisterDestination.route) {
+            RegisterScreen(onBack = { navController.navigateUp() })
         }
 
         composable(

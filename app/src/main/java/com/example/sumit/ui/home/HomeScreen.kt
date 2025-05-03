@@ -67,6 +67,7 @@ fun HomeScreen(
     onNewScan: (Boolean) -> Unit,
     onViewNote: (Int) -> Unit,
     onEditNote: (Int) -> Unit,
+    onRegister: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var currentTab by rememberSaveable { mutableStateOf(HomeTab.Recent) }
@@ -133,7 +134,9 @@ fun HomeScreen(
                         onEditNote = onEditNote
                     )
 
-                    HomeTab.Profile -> ProfileTab()
+                    HomeTab.Profile -> ProfileTab(
+                        onRegister = onRegister
+                    )
                 }
             }
         }
