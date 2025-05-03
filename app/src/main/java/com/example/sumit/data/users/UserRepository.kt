@@ -9,5 +9,7 @@ interface UserRepository {
 
     suspend fun registerWithEmailAndPassword(email: String, password: String)
 
+    suspend fun changePassword(email: String, currentPassword: String, newPassword: String)
+
     fun signOut()
 }

@@ -1,6 +1,10 @@
 package com.example.sumit.ui.home.profile
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
+import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.common.OutlinedPasswordField
 import com.example.sumit.ui.navigation.NavigationDestination
 
@@ -63,29 +68,43 @@ fun RegisterScreen(
         },
         contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
-        Column(
-            modifier = modifier
+        Box(
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(dimensionResource(R.dimen.medium_padding))
-                .verticalScroll(rememberScrollState())
+                .padding(innerPadding),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = stringResource(R.string.sign_up_to_sumit),
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.displayLarge,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(dimensionResource(R.dimen.medium_padding))
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = stringResource(R.string.sign_up_to_sumit),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.displayLarge,
+                    textAlign = TextAlign.Center
+                )
 
-            RegistrationForm(
-                uiState = registrationUiState.form,
-                onEmailChange = viewModel::updateEmail,
-                onNameChange = viewModel::updateName,
-                onUserNameChange = viewModel::updateUsername,
-                onPasswordChange = viewModel::updatePassword,
-                onPasswordConfirmChange = viewModel::updatePasswordConfirm,
-                onSubmit = viewModel::registerWithEmailAndPassword
-            )
+                RegistrationForm(
+                    uiState = registrationUiState.form,
+                    onEmailChange = viewModel::updateEmail,
+                    onNameChange = viewModel::updateName,
+                    onUserNameChange = viewModel::updateUsername,
+                    onPasswordChange = viewModel::updatePassword,
+                    onPasswordConfirmChange = viewModel::updatePasswordConfirm,
+                    onSubmit = viewModel::registerWithEmailAndPassword
+                )
+            }
+
+            AnimatedVisibility(
+                visible = registrationUiState.state == RegistrationState.Loading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                CircularLoadingScreenWithBackdrop()
+            }
         }
     }
 }

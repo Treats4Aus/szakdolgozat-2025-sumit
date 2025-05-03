@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sumit.SumItApplication
 import com.example.sumit.ui.home.notes.MyNotesViewModel
+import com.example.sumit.ui.home.profile.ProfileViewModel
 import com.example.sumit.ui.home.profile.RegistrationViewModel
 import com.example.sumit.ui.home.recent.RecentNotesViewModel
 import com.example.sumit.ui.notes.EditNoteViewModel
@@ -26,6 +27,12 @@ object AppViewModelProvider {
         initializer {
             MyNotesViewModel(
                 notesRepository = sumItApplication().container.notesRepository
+            )
+        }
+
+        initializer {
+            ProfileViewModel(
+                userRepository = sumItApplication().container.userRepository
             )
         }
 
