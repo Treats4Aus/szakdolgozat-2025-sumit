@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.sumit.R
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.home.notes.MyNotesTab
+import com.example.sumit.ui.home.profile.ProfileTab
 import com.example.sumit.ui.home.recent.RecentNotesTab
 import com.example.sumit.ui.navigation.NavigationDestination
 
