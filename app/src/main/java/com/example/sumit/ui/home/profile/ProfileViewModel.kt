@@ -7,11 +7,17 @@ import com.example.sumit.R
 import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.UserRepository
 import com.example.sumit.utils.PasswordValidator
+import com.example.sumit.utils.TIMEOUT_MILLIS
 import com.example.sumit.utils.TranslationPasswordValidator
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,15 +33,30 @@ class ProfileViewModel(
     private val _loginUiState = MutableStateFlow(LoginUiState())
     val loginUiState = _loginUiState.asStateFlow()
 
-    private val _profileUiState = MutableStateFlow(
-        ProfileUiState(
-            loggedIn = userRepository.currentUser != null,
-            email = userRepository.currentUser?.email ?: "",
-            name = userRepository.currentUser?.displayName ?: "",
-            username = "User"
+    val currentUser = userRepository.currentUser
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = null
         )
-    )
-    val profileUiState = _profileUiState.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val userData = currentUser
+        .flatMapLatest { user ->
+            if (user?.uid != null) {
+                userRepository.getUserData(user.uid)
+            } else {
+                flowOf(null)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = null
+        )
+
+    private val _passwordChangeUiState = MutableStateFlow(PasswordChangeUiState())
+    val passwordChangeUiState = _passwordChangeUiState.asStateFlow()
 
     private val _currentMessageRes = MutableStateFlow("")
     val currentMessageRes = _currentMessageRes.asStateFlow()
@@ -69,15 +90,6 @@ class ProfileViewModel(
             try {
                 userRepository.signInWithEmailAndPassword(form.email, form.password)
 
-                _profileUiState.update { currentState ->
-                    currentState.copy(
-                        loggedIn = true,
-                        email = userRepository.currentUser?.email ?: "",
-                        name = userRepository.currentUser?.displayName ?: "",
-                        username = "User"
-                    )
-                }
-
                 resetLoginForm()
             } catch (e: FirebaseException) {
                 Log.e(TAG, "Login error", e)
@@ -89,16 +101,16 @@ class ProfileViewModel(
     }
 
     fun updateCurrentPassword(password: String) =
-        updatePasswordChangeForm(_profileUiState.value.form.copy(currentPassword = password))
+        updatePasswordChangeForm(_passwordChangeUiState.value.form.copy(currentPassword = password))
 
     fun updateNewPassword(password: String) =
-        updatePasswordChangeForm(_profileUiState.value.form.copy(newPassword = password))
+        updatePasswordChangeForm(_passwordChangeUiState.value.form.copy(newPassword = password))
 
     fun updateNewPasswordConfirm(password: String) =
-        updatePasswordChangeForm(_profileUiState.value.form.copy(newPasswordConfirm = password))
+        updatePasswordChangeForm(_passwordChangeUiState.value.form.copy(newPasswordConfirm = password))
 
     private fun resetPasswordChangeForm() {
-        _profileUiState.update { currentState ->
+        _passwordChangeUiState.update { currentState ->
             currentState.copy(
                 form = PasswordChangeFormData()
             )
@@ -106,7 +118,7 @@ class ProfileViewModel(
     }
 
     fun togglePasswordChangeFormVisibility() {
-        _profileUiState.update { currentState ->
+        _passwordChangeUiState.update { currentState ->
             currentState.copy(
                 passwordChangeVisible = !currentState.passwordChangeVisible
             )
@@ -114,7 +126,7 @@ class ProfileViewModel(
     }
 
     fun changePassword() {
-        val form = _profileUiState.value.form
+        val form = _passwordChangeUiState.value.form
 
         Log.d(TAG, "Old password: ${form.currentPassword} New password: ${form.newPassword}")
 
@@ -134,15 +146,19 @@ class ProfileViewModel(
             return
         }
 
+        val userEmail = userData.value?.email
+        if (userEmail == null) {
+            setMessage(translationsRepository.getTranslation(R.string.must_sign_in_first))
+            return
+        }
+
         viewModelScope.launch {
             setPasswordChangeInProgress(true)
 
             try {
-                val userEmail = _profileUiState.value.email
-
                 userRepository.changePassword(userEmail, form.currentPassword, form.newPassword)
 
-                _profileUiState.update { currentState ->
+                _passwordChangeUiState.update { currentState ->
                     currentState.copy(
                         passwordChangeVisible = false
                     )
@@ -165,12 +181,6 @@ class ProfileViewModel(
 
     fun signOut() {
         userRepository.signOut()
-
-        _profileUiState.update { currentState ->
-            currentState.copy(
-                loggedIn = false
-            )
-        }
 
         resetPasswordChangeForm()
     }
@@ -200,7 +210,7 @@ class ProfileViewModel(
     }
 
     private fun updatePasswordChangeForm(formData: PasswordChangeFormData) {
-        _profileUiState.update { currentState ->
+        _passwordChangeUiState.update { currentState ->
             currentState.copy(
                 form = formData
             )
@@ -208,7 +218,7 @@ class ProfileViewModel(
     }
 
     private fun setPasswordChangeInProgress(value: Boolean) {
-        _profileUiState.update { currentState ->
+        _passwordChangeUiState.update { currentState ->
             currentState.copy(
                 passwordChangeInProgress = value
             )
@@ -226,11 +236,7 @@ data class LoginFormData(
     val password: String = ""
 )
 
-data class ProfileUiState(
-    val loggedIn: Boolean = false,
-    val email: String = "",
-    val name: String = "",
-    val username: String = "",
+data class PasswordChangeUiState(
     val form: PasswordChangeFormData = PasswordChangeFormData(),
     val passwordChangeVisible: Boolean = false,
     val passwordChangeInProgress: Boolean = false

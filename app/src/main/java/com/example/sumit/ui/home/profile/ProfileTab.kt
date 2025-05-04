@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
+import com.example.sumit.data.users.UserData
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.common.OutlinedPasswordField
@@ -60,7 +61,9 @@ fun ProfileTab(
     viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val loginUiState by viewModel.loginUiState.collectAsState()
-    val profileUiState by viewModel.profileUiState.collectAsState()
+    val passwordChangeUiState by viewModel.passwordChangeUiState.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val userData by viewModel.userData.collectAsState()
     val currentMessage by viewModel.currentMessageRes.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -81,9 +84,10 @@ fun ProfileTab(
         Column(
             modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))
         ) {
-            if (profileUiState.loggedIn) {
+            if (currentUser != null) {
                 LoggedInScreen(
-                    uiState = profileUiState,
+                    uiState = passwordChangeUiState,
+                    userData = userData ?: UserData(),
                     onVisibilityToggle = viewModel::togglePasswordChangeFormVisibility,
                     onCurrentPasswordChange = viewModel::updateCurrentPassword,
                     onNewPasswordChange = viewModel::updateNewPassword,
@@ -106,7 +110,7 @@ fun ProfileTab(
         }
 
         AnimatedVisibility(
-            visible = loginUiState.loginInProgress || profileUiState.passwordChangeInProgress,
+            visible = loginUiState.loginInProgress || passwordChangeUiState.passwordChangeInProgress,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -119,7 +123,8 @@ fun ProfileTab(
 
 @Composable
 fun LoggedInScreen(
-    uiState: ProfileUiState,
+    uiState: PasswordChangeUiState,
+    userData: UserData,
     onVisibilityToggle: () -> Unit,
     onCurrentPasswordChange: (String) -> Unit,
     onNewPasswordChange: (String) -> Unit,
@@ -140,6 +145,7 @@ fun LoggedInScreen(
 
         ProfileInformation(
             uiState = uiState,
+            userData = userData,
             onVisibilityToggle = onVisibilityToggle,
             onCurrentPasswordChange = onCurrentPasswordChange,
             onNewPasswordChange = onNewPasswordChange,
@@ -180,7 +186,8 @@ fun LoggedInScreen(
 
 @Composable
 fun ProfileInformation(
-    uiState: ProfileUiState,
+    uiState: PasswordChangeUiState,
+    userData: UserData,
     onVisibilityToggle: () -> Unit,
     onCurrentPasswordChange: (String) -> Unit,
     onNewPasswordChange: (String) -> Unit,
@@ -198,7 +205,7 @@ fun ProfileInformation(
         )
 
         OutlinedTextField(
-            value = uiState.username,
+            value = userData.username,
             onValueChange = { },
             modifier = Modifier.fillMaxWidth(),
             enabled = false,
@@ -210,7 +217,7 @@ fun ProfileInformation(
         )
 
         OutlinedTextField(
-            value = uiState.name,
+            value = userData.name,
             onValueChange = { },
             modifier = Modifier.fillMaxWidth(),
             enabled = false,
@@ -222,7 +229,7 @@ fun ProfileInformation(
         )
 
         OutlinedTextField(
-            value = uiState.email,
+            value = userData.email,
             onValueChange = { },
             modifier = Modifier.fillMaxWidth(),
             enabled = false,
@@ -456,8 +463,8 @@ fun LoginForm(
 @Preview(showBackground = true)
 @Composable
 private fun LoggedInPreview() {
-    val mockUiState = ProfileUiState(
-        loggedIn = true,
+    val mockUiState = PasswordChangeUiState()
+    val mockUserData = UserData(
         email = "joe@example.com",
         name = "John Doe",
         username = "johnny"
@@ -465,6 +472,7 @@ private fun LoggedInPreview() {
 
     LoggedInScreen(
         uiState = mockUiState,
+        userData = mockUserData,
         onVisibilityToggle = { },
         onCurrentPasswordChange = { },
         onNewPasswordChange = { },
