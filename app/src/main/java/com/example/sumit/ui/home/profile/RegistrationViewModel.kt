@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
 import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.UserRepository
+import com.example.sumit.utils.PasswordValidator
+import com.example.sumit.utils.TranslationPasswordValidator
 import com.google.firebase.FirebaseException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +20,9 @@ class RegistrationViewModel(
     private val userRepository: UserRepository,
     private val translationsRepository: TranslationsRepository
 ) : ViewModel() {
+    private val passwordValidator: PasswordValidator =
+        TranslationPasswordValidator(translationsRepository)
+
     private val _registrationUiState = MutableStateFlow(RegistrationUiState())
     val registrationUiState = _registrationUiState.asStateFlow()
 
@@ -54,6 +59,13 @@ class RegistrationViewModel(
 
         if (form.username.trim().length < 3) {
             setMessage(translationsRepository.getTranslation(R.string.username_must_be_long))
+            return
+        }
+
+        val validationResult = passwordValidator.validate(form.password)
+        if (validationResult != null) {
+            setMessage(validationResult)
+            return
         }
 
         if (form.password != form.passwordConfirm) {

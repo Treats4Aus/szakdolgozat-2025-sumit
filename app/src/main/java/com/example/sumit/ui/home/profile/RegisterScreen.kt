@@ -88,8 +88,7 @@ fun RegisterScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.Center
+                .padding(innerPadding)
         ) {
             Column(
                 modifier = modifier

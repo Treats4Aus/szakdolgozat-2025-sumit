@@ -78,4 +78,8 @@
     <string name="username_must_be_long">The username must be at least 3 characters long</string>
     <string name="unsuccessful_registration">Unsuccessful registration</string>
     <string name="successful_registration">Successful registration</string>
+    <string name="password_must_be_long">Password must be at least 8 characters long</string>
+    <string name="password_must_contain_number">Password must contain numbers</string>
+    <string name="password_must_contain_uppercase">Password must contain uppercase letters</string>
+    <string name="password_must_not_contain_whitespace">Password must not contain whitespaces</string>
 </resources>

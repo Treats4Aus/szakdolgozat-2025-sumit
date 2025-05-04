@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
 import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.UserRepository
+import com.example.sumit.utils.PasswordValidator
+import com.example.sumit.utils.TranslationPasswordValidator
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,9 @@ class ProfileViewModel(
     private val userRepository: UserRepository,
     private val translationsRepository: TranslationsRepository
 ) : ViewModel() {
+    private val passwordValidator: PasswordValidator =
+        TranslationPasswordValidator(translationsRepository)
+
     private val _loginUiState = MutableStateFlow(LoginUiState())
     val loginUiState = _loginUiState.asStateFlow()
 
@@ -115,6 +120,12 @@ class ProfileViewModel(
 
         if (form.currentPassword.isEmpty() || form.newPassword.isEmpty()) {
             setMessage(translationsRepository.getTranslation(R.string.please_fill_out_every_field))
+            return
+        }
+
+        val validationResult = passwordValidator.validate(form.newPassword)
+        if (validationResult != null) {
+            setMessage(validationResult)
             return
         }
 
