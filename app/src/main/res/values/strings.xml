@@ -64,4 +64,5 @@
     <string name="your_info">Your info</string>
     <string name="no_friends">Your don\'t have any friends</string>
     <string name="click_button_to_add_friend">Click the button to add your first friend to start sharing notes</string>
+    <string name="please_fill_out_every_field">Please fill out every field</string>
 </resources>

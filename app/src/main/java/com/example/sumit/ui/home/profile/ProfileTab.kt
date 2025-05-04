@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,7 +26,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,13 +35,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,67 +61,66 @@ fun ProfileTab(
 ) {
     val loginUiState by viewModel.loginUiState.collectAsState()
     val profileUiState by viewModel.profileUiState.collectAsState()
-    val currentErrorMessage by viewModel.currentErrorMessage.collectAsState()
+    val currentMessage by viewModel.currentMessageRes.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(currentErrorMessage) {
-        if (currentErrorMessage.isNotEmpty()) {
+    LaunchedEffect(currentMessage) {
+        if (currentMessage.isNotEmpty()) {
             snackBarHostState.showSnackbar(
-                message = currentErrorMessage,
+                message = currentMessage,
                 duration = SnackbarDuration.Short
             )
-            viewModel.resetErrorMessage()
+            viewModel.resetMessage()
         }
     }
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
-        }
-    ) { contentPadding ->
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(contentPadding)
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))
         ) {
-            Column(
-                modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))
-            ) {
-                if (profileUiState.loggedIn) {
-                    LoggedInScreen(
-                        uiState = profileUiState,
-                        onCurrentPasswordChange = viewModel::updateCurrentPassword,
-                        onNewPasswordChange = viewModel::updateNewPassword,
-                        onNewPasswordConfirmChange = viewModel::updateNewPasswordConfirm,
-                        onSubmit = viewModel::changePassword,
-                        onSignOut = viewModel::signOut
-                    )
-                } else {
-                    AnonymousScreen(
-                        uiState = loginUiState.form,
-                        onEmailChange = viewModel::updateEmail,
-                        onPasswordChange = viewModel::updatePassword,
-                        onLogin = viewModel::signInWithEmailAndPassword,
-                        onRegister = onRegister
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                CircularLoadingScreenWithBackdrop()
+            if (profileUiState.loggedIn) {
+                LoggedInScreen(
+                    uiState = profileUiState,
+                    onVisibilityToggle = viewModel::togglePasswordChangeFormVisibility,
+                    onCurrentPasswordChange = viewModel::updateCurrentPassword,
+                    onNewPasswordChange = viewModel::updateNewPassword,
+                    onNewPasswordConfirmChange = viewModel::updateNewPasswordConfirm,
+                    onSubmit = viewModel::changePassword,
+                    onSignOut = viewModel::signOut
+                )
+            } else {
+                AnonymousScreen(
+                    uiState = loginUiState.form,
+                    onEmailChange = viewModel::updateEmail,
+                    onPasswordChange = viewModel::updatePassword,
+                    onLogin = viewModel::signInWithEmailAndPassword,
+                    onRegister = {
+                        viewModel.resetLoginForm()
+                        onRegister()
+                    }
+                )
             }
         }
+
+        AnimatedVisibility(
+            visible = loginUiState.loginInProgress || profileUiState.passwordChangeInProgress,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            CircularLoadingScreenWithBackdrop()
+        }
+
+        SnackbarHost(hostState = snackBarHostState)
     }
 }
 
 @Composable
 fun LoggedInScreen(
     uiState: ProfileUiState,
+    onVisibilityToggle: () -> Unit,
     onCurrentPasswordChange: (String) -> Unit,
     onNewPasswordChange: (String) -> Unit,
     onNewPasswordConfirmChange: (String) -> Unit,
@@ -140,6 +140,7 @@ fun LoggedInScreen(
 
         ProfileInformation(
             uiState = uiState,
+            onVisibilityToggle = onVisibilityToggle,
             onCurrentPasswordChange = onCurrentPasswordChange,
             onNewPasswordChange = onNewPasswordChange,
             onNewPasswordConfirmChange = onNewPasswordConfirmChange,
@@ -180,6 +181,7 @@ fun LoggedInScreen(
 @Composable
 fun ProfileInformation(
     uiState: ProfileUiState,
+    onVisibilityToggle: () -> Unit,
     onCurrentPasswordChange: (String) -> Unit,
     onNewPasswordChange: (String) -> Unit,
     onNewPasswordConfirmChange: (String) -> Unit,
@@ -187,8 +189,6 @@ fun ProfileInformation(
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var passwordChangeVisible by remember { mutableStateOf(false) }
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
@@ -230,7 +230,7 @@ fun ProfileInformation(
         )
 
         Button(
-            onClick = { passwordChangeVisible = !passwordChangeVisible },
+            onClick = onVisibilityToggle,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .width(dimensionResource(R.dimen.form_button_width)),
@@ -240,7 +240,7 @@ fun ProfileInformation(
         }
 
         AnimatedVisibility(
-            visible = passwordChangeVisible,
+            visible = uiState.passwordChangeVisible,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
@@ -278,10 +278,7 @@ fun ProfileInformation(
                 )
 
                 Button(
-                    onClick = {
-                        onSubmit()
-                        passwordChangeVisible = false
-                    },
+                    onClick = onSubmit,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .width(dimensionResource(R.dimen.form_button_width)),
@@ -399,6 +396,8 @@ fun LoginForm(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+
     Column(
         modifier = modifier.padding(horizontal = dimensionResource(R.dimen.large_padding)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
@@ -412,7 +411,13 @@ fun LoginForm(
             onValueChange = onEmailChange,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            )
         )
 
         Text(
@@ -423,7 +428,17 @@ fun LoginForm(
             password = uiState.password,
             onPasswordChange = onPasswordChange,
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                    onSubmit()
+                }
+            )
         )
 
         Button(
@@ -450,6 +465,7 @@ private fun LoggedInPreview() {
 
     LoggedInScreen(
         uiState = mockUiState,
+        onVisibilityToggle = { },
         onCurrentPasswordChange = { },
         onNewPasswordChange = { },
         onNewPasswordConfirmChange = { },

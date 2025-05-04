@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.data.users.UserRepository
 import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -26,8 +27,8 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
     )
     val profileUiState = _profileUiState.asStateFlow()
 
-    private val _currentErrorMessage = MutableStateFlow("")
-    val currentErrorMessage = _currentErrorMessage.asStateFlow()
+    private val _currentMessageRes = MutableStateFlow("")
+    val currentMessageRes = _currentMessageRes.asStateFlow()
 
     fun updateEmail(email: String) =
         updateLoginForm(_loginUiState.value.form.copy(email = email))
@@ -35,12 +36,24 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
     fun updatePassword(password: String) =
         updateLoginForm(_loginUiState.value.form.copy(password = password))
 
+    fun resetLoginForm() {
+        _loginUiState.update { currentState ->
+            currentState.copy(
+                form = LoginFormData()
+            )
+        }
+    }
+
     fun signInWithEmailAndPassword() {
         Log.d(
             TAG,
             "Email: ${_loginUiState.value.form.email} " +
                     "Password: ${_loginUiState.value.form.password}"
         )
+
+        if (_loginUiState.value.form.email.isEmpty() || _loginUiState.value.form.password.isEmpty()) {
+            return
+        }
 
         viewModelScope.launch {
             setLoginInProgress(true)
@@ -59,9 +72,11 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
                         username = "User"
                     )
                 }
+
+                resetLoginForm()
             } catch (e: FirebaseException) {
                 Log.e(TAG, "Login error", e)
-                setErrorMessage("Incorrect email address or password")
+                setMessage("Incorrect email address or password")
             }
 
             setLoginInProgress(false)
@@ -77,6 +92,22 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
     fun updateNewPasswordConfirm(password: String) =
         updatePasswordChangeForm(_profileUiState.value.form.copy(newPasswordConfirm = password))
 
+    private fun resetPasswordChangeForm() {
+        _profileUiState.update { currentState ->
+            currentState.copy(
+                form = PasswordChangeFormData()
+            )
+        }
+    }
+
+    fun togglePasswordChangeFormVisibility() {
+        _profileUiState.update { currentState ->
+            currentState.copy(
+                passwordChangeVisible = !currentState.passwordChangeVisible
+            )
+        }
+    }
+
     fun changePassword() {
         Log.d(
             TAG,
@@ -84,14 +115,42 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
                     "New password: ${_profileUiState.value.form.newPassword}"
         )
 
+        if (_profileUiState.value.form.currentPassword.isEmpty() || _profileUiState.value.form.newPassword.isEmpty()) {
+            setMessage("Please fill out every field")
+            return
+        }
+
+        if (_profileUiState.value.form.newPassword != _profileUiState.value.form.newPasswordConfirm) {
+            setMessage("The new password and the confirm password must match")
+            return
+        }
+
         viewModelScope.launch {
             setPasswordChangeInProgress(true)
 
-            userRepository.changePassword(
-                _profileUiState.value.email,
-                _profileUiState.value.form.currentPassword,
-                _profileUiState.value.form.newPassword
-            )
+            try {
+                userRepository.changePassword(
+                    _profileUiState.value.email,
+                    _profileUiState.value.form.currentPassword,
+                    _profileUiState.value.form.newPassword
+                )
+
+                _profileUiState.update { currentState ->
+                    currentState.copy(
+                        passwordChangeVisible = false
+                    )
+                }
+
+                setMessage("Password changed successfully")
+
+                resetPasswordChangeForm()
+            } catch (e: FirebaseAuthInvalidCredentialsException) {
+                Log.e(TAG, "Change password invalid credentials")
+                setMessage("Incorrect password")
+            } catch (e: FirebaseException) {
+                Log.e(TAG, "Change password error", e)
+                setMessage("Password change failed")
+            }
 
             setPasswordChangeInProgress(false)
         }
@@ -105,14 +164,16 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
                 loggedIn = false
             )
         }
+
+        resetPasswordChangeForm()
     }
 
-    fun resetErrorMessage() {
-        _currentErrorMessage.value = ""
+    fun resetMessage() {
+        _currentMessageRes.value = ""
     }
 
-    private fun setErrorMessage(message: String) {
-        _currentErrorMessage.value = message
+    private fun setMessage(message: String) {
+        _currentMessageRes.value = message
     }
 
     private fun updateLoginForm(formData: LoginFormData) {
@@ -164,6 +225,7 @@ data class ProfileUiState(
     val name: String = "",
     val username: String = "",
     val form: PasswordChangeFormData = PasswordChangeFormData(),
+    val passwordChangeVisible: Boolean = false,
     val passwordChangeInProgress: Boolean = false
 )
 

@@ -1,5 +1,6 @@
 package com.example.sumit.ui.common
 
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -13,10 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
@@ -25,7 +24,9 @@ fun OutlinedPasswordField(
     onPasswordChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+    keyboardActions: KeyboardActions = KeyboardActions()
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -38,9 +39,10 @@ fun OutlinedPasswordField(
         visualTransformation = if (passwordVisible) {
             VisualTransformation.None
         } else {
-            LastCharacterVisiblePasswordTransformation()
+            PasswordVisualTransformation()
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         trailingIcon = {
             val image = if (passwordVisible) {
                 Icons.Filled.Visibility
@@ -58,25 +60,4 @@ fun OutlinedPasswordField(
             }
         }
     )
-}
-
-class LastCharacterVisiblePasswordTransformation : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        val transformedText = buildString {
-            if (text.text.isNotEmpty()) {
-                append("*".repeat(text.length - 1))
-                append(text.last())
-            }
-        }
-
-        val offsetMapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int =
-                offset.coerceAtMost(transformedText.length)
-
-            override fun transformedToOriginal(offset: Int): Int =
-                offset.coerceAtMost(text.length)
-        }
-
-        return TransformedText(AnnotatedString(transformedText), offsetMapping)
-    }
 }
