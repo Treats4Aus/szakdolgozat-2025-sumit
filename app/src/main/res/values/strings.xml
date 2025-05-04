@@ -70,8 +70,12 @@
 
     <string name="incorrect_email_or_password">Incorrect email address or password</string>
     <string name="please_fill_out_every_field">Please fill out every field</string>
-    <string name="new_password_and_confirm_must_match">The new password and the confirm password must match</string>
+    <string name="password_and_confirm_must_match">The password and the confirm password must match</string>
     <string name="password_changed_successfully">Password changed successfully</string>
     <string name="incorrect_password">Incorrect password</string>
     <string name="password_change_failed">Password change failed</string>
+
+    <string name="username_must_be_long">The username must be at least 3 characters long</string>
+    <string name="unsuccessful_registration">Unsuccessful registration</string>
+    <string name="successful_registration">Successful registration</string>
 </resources>

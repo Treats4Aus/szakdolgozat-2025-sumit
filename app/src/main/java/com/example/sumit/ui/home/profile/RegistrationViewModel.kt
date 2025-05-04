@@ -3,7 +3,10 @@ package com.example.sumit.ui.home.profile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sumit.R
+import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.UserRepository
+import com.google.firebase.FirebaseException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -11,9 +14,15 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "RegistrationViewModel"
 
-class RegistrationViewModel(private val userRepository: UserRepository) : ViewModel() {
+class RegistrationViewModel(
+    private val userRepository: UserRepository,
+    private val translationsRepository: TranslationsRepository
+) : ViewModel() {
     private val _registrationUiState = MutableStateFlow(RegistrationUiState())
     val registrationUiState = _registrationUiState.asStateFlow()
+
+    private val _currentMessageRes = MutableStateFlow("")
+    val currentMessageRes = _currentMessageRes.asStateFlow()
 
     fun updateEmail(email: String) =
         updateForm(_registrationUiState.value.form.copy(email = email))
@@ -31,22 +40,49 @@ class RegistrationViewModel(private val userRepository: UserRepository) : ViewMo
         updateForm(_registrationUiState.value.form.copy(passwordConfirm = passwordConfirm))
 
     fun registerWithEmailAndPassword() {
-        Log.d(
-            TAG,
-            "Email: ${_registrationUiState.value.form.email} " +
-                    "Password: ${_registrationUiState.value.form.password}"
-        )
+        val form = _registrationUiState.value.form
+
+        Log.d(TAG, "Email: ${form.email} Password: ${form.password}")
+
+        if (
+            form.email.isEmpty() || form.name.isEmpty() || form.username.isEmpty() ||
+            form.password.isEmpty() || form.passwordConfirm.isEmpty()
+        ) {
+            setMessage(translationsRepository.getTranslation(R.string.please_fill_out_every_field))
+            return
+        }
+
+        if (form.username.trim().length < 3) {
+            setMessage(translationsRepository.getTranslation(R.string.username_must_be_long))
+        }
+
+        if (form.password != form.passwordConfirm) {
+            setMessage(translationsRepository.getTranslation(R.string.password_and_confirm_must_match))
+            return
+        }
 
         viewModelScope.launch {
             setRegistrationState(RegistrationState.Loading)
 
-            userRepository.registerWithEmailAndPassword(
-                _registrationUiState.value.form.email,
-                _registrationUiState.value.form.password
-            )
+            try {
+                userRepository.registerWithEmailAndPassword(form.email, form.password)
+
+                setMessage(translationsRepository.getTranslation(R.string.successful_registration))
+            } catch (e: FirebaseException) {
+                Log.e(TAG, "Registration failed", e)
+                setMessage(translationsRepository.getTranslation(R.string.unsuccessful_registration))
+            }
 
             setRegistrationState(RegistrationState.Finished)
         }
+    }
+
+    fun resetMessage() {
+        _currentMessageRes.value = ""
+    }
+
+    private fun setMessage(message: String) {
+        _currentMessageRes.value = message
     }
 
     private fun updateForm(formData: RegistrationFormData) {

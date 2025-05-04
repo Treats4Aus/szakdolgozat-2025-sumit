@@ -50,13 +50,11 @@ class ProfileViewModel(
     }
 
     fun signInWithEmailAndPassword() {
-        Log.d(
-            TAG,
-            "Email: ${_loginUiState.value.form.email} " +
-                    "Password: ${_loginUiState.value.form.password}"
-        )
+        val form = _loginUiState.value.form
 
-        if (_loginUiState.value.form.email.isEmpty() || _loginUiState.value.form.password.isEmpty()) {
+        Log.d(TAG, "Email: ${form.email} Password: ${form.password}")
+
+        if (form.email.isEmpty() || form.password.isEmpty()) {
             return
         }
 
@@ -64,10 +62,7 @@ class ProfileViewModel(
             setLoginInProgress(true)
 
             try {
-                userRepository.signInWithEmailAndPassword(
-                    _loginUiState.value.form.email,
-                    _loginUiState.value.form.password
-                )
+                userRepository.signInWithEmailAndPassword(form.email, form.password)
 
                 _profileUiState.update { currentState ->
                     currentState.copy(
@@ -114,19 +109,17 @@ class ProfileViewModel(
     }
 
     fun changePassword() {
-        Log.d(
-            TAG,
-            "Old password: ${_profileUiState.value.form.currentPassword} " +
-                    "New password: ${_profileUiState.value.form.newPassword}"
-        )
+        val form = _profileUiState.value.form
 
-        if (_profileUiState.value.form.currentPassword.isEmpty() || _profileUiState.value.form.newPassword.isEmpty()) {
+        Log.d(TAG, "Old password: ${form.currentPassword} New password: ${form.newPassword}")
+
+        if (form.currentPassword.isEmpty() || form.newPassword.isEmpty()) {
             setMessage(translationsRepository.getTranslation(R.string.please_fill_out_every_field))
             return
         }
 
-        if (_profileUiState.value.form.newPassword != _profileUiState.value.form.newPasswordConfirm) {
-            setMessage(translationsRepository.getTranslation(R.string.new_password_and_confirm_must_match))
+        if (form.newPassword != form.newPasswordConfirm) {
+            setMessage(translationsRepository.getTranslation(R.string.password_and_confirm_must_match))
             return
         }
 
@@ -134,11 +127,9 @@ class ProfileViewModel(
             setPasswordChangeInProgress(true)
 
             try {
-                userRepository.changePassword(
-                    _profileUiState.value.email,
-                    _profileUiState.value.form.currentPassword,
-                    _profileUiState.value.form.newPassword
-                )
+                val userEmail = _profileUiState.value.email
+
+                userRepository.changePassword(userEmail, form.currentPassword, form.newPassword)
 
                 _profileUiState.update { currentState ->
                     currentState.copy(

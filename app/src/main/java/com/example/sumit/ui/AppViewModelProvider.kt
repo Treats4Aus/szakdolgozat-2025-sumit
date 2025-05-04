@@ -39,7 +39,8 @@ object AppViewModelProvider {
 
         initializer {
             RegistrationViewModel(
-                userRepository = sumItApplication().container.userRepository
+                userRepository = sumItApplication().container.userRepository,
+                translationsRepository = sumItApplication().container.translationsRepository
             )
         }
 
