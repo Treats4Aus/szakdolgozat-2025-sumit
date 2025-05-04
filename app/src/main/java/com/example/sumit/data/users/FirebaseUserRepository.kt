@@ -3,9 +3,13 @@ package com.example.sumit.data.users
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class FirebaseUserRepository(private val auth: FirebaseAuth) : UserRepository {
+class FirebaseUserRepository(
+    private val auth: FirebaseAuth,
+    private val store: FirebaseFirestore
+) : UserRepository {
     override val currentUser: FirebaseUser? = auth.currentUser
 
     override suspend fun signInWithEmailAndPassword(email: String, password: String) {

@@ -11,6 +11,7 @@ import com.example.sumit.data.users.FirebaseUserRepository
 import com.example.sumit.data.users.UserRepository
 import com.example.sumit.utils.InferenceModel
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 interface AppContainer {
@@ -36,7 +37,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val userRepository: UserRepository by lazy {
         val auth = Firebase.auth
-        FirebaseUserRepository(auth)
+        val store = Firebase.firestore
+        FirebaseUserRepository(auth, store)
     }
 
     override val translationsRepository: TranslationsRepository by lazy {
