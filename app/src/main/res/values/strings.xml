@@ -40,5 +40,47 @@
     <string name="use_scan_button">Use the scan button to create one now</string>
     <string name="no_shared_notes">You don\'t have any shared notes</string>
     <string name="sign_in_or_create_account">Sign in or create an account to start sharing notes</string>
+
     <string name="add_friends">Add friends and start sharing notes</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="no_account_question">Don\'t have an account?</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+
+    <string name="name">Name</string>
+    <string name="username">Username</string>
+    <string name="password_confirm">Password confirm</string>
+    <string name="create_account">Create account</string>
+    <string name="sign_up_to_sumit">Sign up to SumIt</string>
+
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="confirm">Confirm</string>
+    <string name="change_password">Change password</string>
+
+    <string name="sign_out">Sign out</string>
+    <string name="your_friends">Your friends</string>
+    <string name="add_a_friend">Add a friend</string>
+    <string name="your_info">Your info</string>
+    <string name="no_friends">Your don\'t have any friends</string>
+    <string name="click_button_to_add_friend">Click the button to add your first friend to start sharing notes</string>
+
+    <string name="incorrect_email_or_password">Incorrect email address or password</string>
+    <string name="please_fill_out_every_field">Please fill out every field</string>
+    <string name="password_and_confirm_must_match">The password and the confirm password must match</string>
+    <string name="password_changed_successfully">Password changed successfully</string>
+    <string name="incorrect_password">Incorrect password</string>
+    <string name="password_change_failed">Password change failed</string>
+
+    <string name="username_must_be_long">The username must be at least 3 characters long</string>
+    <string name="unsuccessful_registration">Unsuccessful registration</string>
+    <string name="successful_registration">Successful registration</string>
+    <string name="password_must_be_long">Password must be at least 8 characters long</string>
+    <string name="password_must_contain_number">Password must contain numbers</string>
+    <string name="password_must_contain_uppercase">Password must contain uppercase letters</string>
+    <string name="password_must_not_contain_whitespace">Password must not contain whitespaces</string>
+    <string name="must_sign_in_first">You must sign in first</string>
 </resources>
