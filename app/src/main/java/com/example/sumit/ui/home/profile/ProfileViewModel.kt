@@ -3,6 +3,8 @@ package com.example.sumit.ui.home.profile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sumit.R
+import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.UserRepository
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -13,7 +15,10 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "ProfileViewModel"
 
-class ProfileViewModel(private val userRepository: UserRepository) : ViewModel() {
+class ProfileViewModel(
+    private val userRepository: UserRepository,
+    private val translationsRepository: TranslationsRepository
+) : ViewModel() {
     private val _loginUiState = MutableStateFlow(LoginUiState())
     val loginUiState = _loginUiState.asStateFlow()
 
@@ -76,7 +81,7 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
                 resetLoginForm()
             } catch (e: FirebaseException) {
                 Log.e(TAG, "Login error", e)
-                setMessage("Incorrect email address or password")
+                setMessage(translationsRepository.getTranslation(R.string.incorrect_email_or_password))
             }
 
             setLoginInProgress(false)
@@ -116,12 +121,12 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
         )
 
         if (_profileUiState.value.form.currentPassword.isEmpty() || _profileUiState.value.form.newPassword.isEmpty()) {
-            setMessage("Please fill out every field")
+            setMessage(translationsRepository.getTranslation(R.string.please_fill_out_every_field))
             return
         }
 
         if (_profileUiState.value.form.newPassword != _profileUiState.value.form.newPasswordConfirm) {
-            setMessage("The new password and the confirm password must match")
+            setMessage(translationsRepository.getTranslation(R.string.new_password_and_confirm_must_match))
             return
         }
 
@@ -141,15 +146,15 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
                     )
                 }
 
-                setMessage("Password changed successfully")
+                setMessage(translationsRepository.getTranslation(R.string.password_changed_successfully))
 
                 resetPasswordChangeForm()
             } catch (e: FirebaseAuthInvalidCredentialsException) {
                 Log.e(TAG, "Change password invalid credentials")
-                setMessage("Incorrect password")
+                setMessage(translationsRepository.getTranslation(R.string.incorrect_password))
             } catch (e: FirebaseException) {
                 Log.e(TAG, "Change password error", e)
-                setMessage("Password change failed")
+                setMessage(translationsRepository.getTranslation(R.string.password_change_failed))
             }
 
             setPasswordChangeInProgress(false)

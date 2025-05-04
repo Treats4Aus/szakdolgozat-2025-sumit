@@ -32,7 +32,8 @@ object AppViewModelProvider {
 
         initializer {
             ProfileViewModel(
-                userRepository = sumItApplication().container.userRepository
+                userRepository = sumItApplication().container.userRepository,
+                translationsRepository = sumItApplication().container.translationsRepository
             )
         }
 
