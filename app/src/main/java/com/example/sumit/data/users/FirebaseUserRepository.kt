@@ -4,7 +4,7 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.dataObjects
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -63,20 +63,9 @@ class FirebaseUserRepository(
         collection.document(firebaseId).set(userData).await()
     }
 
-    override fun getUserData(firebaseId: String): Flow<UserData?> = callbackFlow {
+    override fun getUserData(firebaseId: String): Flow<UserData?> {
         val documentRef = store.collection(USER_COLLECTION_NAME).document(firebaseId)
-        val snapshotListener = documentRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
-            if (snapshot != null && snapshot.exists()) {
-                trySend(snapshot.toObject<UserData>())
-            } else {
-                trySend(null)
-            }
-        }
-        awaitClose { snapshotListener.remove() }
+        return documentRef.dataObjects<UserData>()
     }
 
     override fun signOut() {
