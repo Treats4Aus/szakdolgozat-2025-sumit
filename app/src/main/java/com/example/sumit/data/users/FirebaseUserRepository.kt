@@ -3,16 +3,24 @@ package com.example.sumit.data.users
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.AggregateSource
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.dataObjects
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.tasks.await
 
 private const val USER_COLLECTION_NAME = "users"
+private const val FRIENDSHIP_COLLECTION_NAME = "friendships"
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FirebaseUserRepository(
     private val auth: FirebaseAuth,
     private val store: FirebaseFirestore
@@ -70,5 +78,52 @@ class FirebaseUserRepository(
 
     override fun signOut() {
         auth.signOut()
+    }
+
+    override suspend fun validateEmail(email: String): Boolean {
+        val collection = store.collection(USER_COLLECTION_NAME)
+        val emailFieldName = "email"
+
+        val query = collection.whereEqualTo(emailFieldName, email).count()
+        val result = query.get(AggregateSource.SERVER).await()
+
+        return result.count == 1L
+    }
+
+    override fun getUserFriends(firebaseId: String): Flow<List<UserData>> {
+        val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
+        val requesterFieldName = "requesterId"
+        val responderFieldName = "responderId"
+        val statusFieldName = "status"
+
+        val userFriendshipsQuery = friendshipCollection.where(
+            Filter.and(
+                Filter.or(
+                    Filter.equalTo(requesterFieldName, firebaseId),
+                    Filter.equalTo(responderFieldName, firebaseId)
+                ),
+                Filter.equalTo(statusFieldName, FriendshipStatus.Accepted)
+            )
+        )
+        val userFriendships = userFriendshipsQuery.dataObjects<FriendshipData>()
+
+        val friendIds = userFriendships
+            .map { friendships ->
+                friendships.map { friendship ->
+                    if (friendship.requesterId == firebaseId) {
+                        friendship.responderId
+                    } else {
+                        friendship.requesterId
+                    }
+                }
+            }
+
+        return friendIds.flatMapLatest { ids ->
+            val userFlows = ids.map { getUserData(it) }
+
+            combine(userFlows) { users ->
+                users.mapNotNull { it }.toList()
+            }
+        }
     }
 }

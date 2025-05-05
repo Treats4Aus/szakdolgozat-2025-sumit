@@ -17,4 +17,8 @@ interface UserRepository {
     fun getUserData(firebaseId: String): Flow<UserData?>
 
     fun signOut()
+
+    suspend fun validateEmail(email: String): Boolean
+
+    fun getUserFriends(firebaseId: String): Flow<List<UserData>>
 }
