@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "ProfileViewModel"
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
     private val userRepository: UserRepository,
     private val translationsRepository: TranslationsRepository
@@ -40,7 +41,6 @@ class ProfileViewModel(
             initialValue = null
         )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val userData = currentUser
         .flatMapLatest { user ->
             if (user?.uid != null) {
@@ -53,6 +53,20 @@ class ProfileViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
             initialValue = null
+        )
+
+    val friendList = currentUser
+        .flatMapLatest { user ->
+            if (user?.uid != null) {
+                userRepository.getUserFriends(user.uid)
+            } else {
+                flowOf(emptyList())
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = emptyList()
         )
 
     private val _passwordChangeUiState = MutableStateFlow(PasswordChangeUiState())

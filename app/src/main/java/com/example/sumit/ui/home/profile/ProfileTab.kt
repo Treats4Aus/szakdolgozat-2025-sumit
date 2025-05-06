@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,9 +52,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
+import com.example.sumit.data.users.FriendData
 import com.example.sumit.data.users.UserData
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
+import com.example.sumit.ui.common.FriendCard
 import com.example.sumit.ui.common.OutlinedPasswordField
 
 @Composable
@@ -62,8 +67,11 @@ fun ProfileTab(
 ) {
     val loginUiState by viewModel.loginUiState.collectAsState()
     val passwordChangeUiState by viewModel.passwordChangeUiState.collectAsState()
+
     val currentUser by viewModel.currentUser.collectAsState()
     val userData by viewModel.userData.collectAsState()
+    val friendList by viewModel.friendList.collectAsState()
+
     val currentMessage by viewModel.currentMessageRes.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -88,6 +96,7 @@ fun ProfileTab(
                 LoggedInScreen(
                     uiState = passwordChangeUiState,
                     userData = userData ?: UserData(),
+                    friendList = friendList,
                     onVisibilityToggle = viewModel::togglePasswordChangeFormVisibility,
                     onCurrentPasswordChange = viewModel::updateCurrentPassword,
                     onNewPasswordChange = viewModel::updateNewPassword,
@@ -125,6 +134,7 @@ fun ProfileTab(
 fun LoggedInScreen(
     uiState: PasswordChangeUiState,
     userData: UserData,
+    friendList: List<FriendData>,
     onVisibilityToggle: () -> Unit,
     onCurrentPasswordChange: (String) -> Unit,
     onNewPasswordChange: (String) -> Unit,
@@ -133,54 +143,70 @@ fun LoggedInScreen(
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier
-            .padding(horizontal = dimensionResource(R.dimen.large_padding))
-            .verticalScroll(rememberScrollState())
+            .padding(horizontal = dimensionResource(R.dimen.large_padding)),
+        contentPadding = PaddingValues(bottom = dimensionResource(R.dimen.large_padding)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.medium_padding))
     ) {
-        Text(
-            text = stringResource(R.string.your_info),
-            style = MaterialTheme.typography.displayLarge
-        )
-
-        ProfileInformation(
-            uiState = uiState,
-            userData = userData,
-            onVisibilityToggle = onVisibilityToggle,
-            onCurrentPasswordChange = onCurrentPasswordChange,
-            onNewPasswordChange = onNewPasswordChange,
-            onNewPasswordConfirmChange = onNewPasswordConfirmChange,
-            onSubmit = onSubmit,
-            onSignOut = onSignOut
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        item {
             Text(
-                text = stringResource(R.string.your_friends),
+                text = stringResource(R.string.your_info),
                 style = MaterialTheme.typography.displayLarge
             )
 
-            TextButton(
-                onClick = { }
-            ) {
-                Row {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                }
+            ProfileInformation(
+                uiState = uiState,
+                userData = userData,
+                onVisibilityToggle = onVisibilityToggle,
+                onCurrentPasswordChange = onCurrentPasswordChange,
+                onNewPasswordChange = onNewPasswordChange,
+                onNewPasswordConfirmChange = onNewPasswordConfirmChange,
+                onSubmit = onSubmit,
+                onSignOut = onSignOut
+            )
 
-                Text(stringResource(R.string.add_a_friend))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.your_friends),
+                    style = MaterialTheme.typography.displayLarge
+                )
+
+                TextButton(
+                    onClick = { }
+                ) {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null
+                        )
+                    }
+
+                    Text(stringResource(R.string.add_a_friend))
+                }
             }
         }
 
-        FriendsList()
+        if (friendList.isNotEmpty()) {
+            items(friendList, { it.friendshipData.id }) {
+                FriendCard(
+                    friendData = it,
+                    onRemoveFriend = { },
+                    onBlockFriend = { },
+                )
+            }
+        } else {
+            item {
+                NoFriends()
+            }
+        }
+
     }
 }
 
@@ -310,7 +336,7 @@ fun ProfileInformation(
 }
 
 @Composable
-fun FriendsList(modifier: Modifier = Modifier) {
+fun NoFriends(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.padding(vertical = dimensionResource(R.dimen.large_padding))
     ) {
@@ -473,6 +499,7 @@ private fun LoggedInPreview() {
     LoggedInScreen(
         uiState = mockUiState,
         userData = mockUserData,
+        friendList = emptyList(),
         onVisibilityToggle = { },
         onCurrentPasswordChange = { },
         onNewPasswordChange = { },

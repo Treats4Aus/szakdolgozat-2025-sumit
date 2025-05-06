@@ -22,12 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.sumit.R
 import com.example.sumit.data.notes.Note
+import com.example.sumit.utils.DATE_FORMAT
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -42,7 +44,7 @@ fun NoteCard(
     onEditClick: () -> Unit = { },
     onDeleteClick: () -> Unit = { }
 ) {
-    val lastModifiedDate = SimpleDateFormat("yyyy MMMM dd", Locale.getDefault())
+    val lastModifiedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
         .format(note.lastModified)
     var expanded by remember { mutableStateOf(false) }
 
@@ -89,7 +91,7 @@ fun NoteCard(
                     )
 
                     Text(
-                        text = "Last modified: $lastModifiedDate",
+                        text = stringResource(R.string.last_modified, lastModifiedDate),
                         modifier = Modifier.weight(1f),
                         fontSize = 14.sp,
                         textAlign = TextAlign.End
@@ -103,12 +105,12 @@ fun NoteCard(
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text("Edit note") },
+                text = { Text(stringResource(R.string.edit_note)) },
                 onClick = onEditClick
             )
 
             DropdownMenuItem(
-                text = { Text("Delete note") },
+                text = { Text(stringResource(R.string.delete_note)) },
                 onClick = onDeleteClick
             )
         }

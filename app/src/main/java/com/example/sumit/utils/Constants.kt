@@ -25,3 +25,5 @@ const val MODELS_PATH = "models"
 const val MODEL_NAME = "gemma3-1b-it-int4.task"
 
 const val TIMEOUT_MILLIS = 5_000L
+
+const val DATE_FORMAT = "yyyy MMMM dd"

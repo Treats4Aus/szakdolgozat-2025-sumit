@@ -90,7 +90,7 @@ class FirebaseUserRepository(
         return result.count == 1L
     }
 
-    override fun getUserFriends(firebaseId: String): Flow<List<UserData>> {
+    override fun getUserFriends(firebaseId: String): Flow<List<FriendData>> {
         val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
         val requesterFieldName = "requesterId"
         val responderFieldName = "responderId"
@@ -102,27 +102,25 @@ class FirebaseUserRepository(
                     Filter.equalTo(requesterFieldName, firebaseId),
                     Filter.equalTo(responderFieldName, firebaseId)
                 ),
-                Filter.equalTo(statusFieldName, FriendshipStatus.Accepted)
+                Filter.equalTo(statusFieldName, FriendshipStatus.Accepted.toString())
             )
         )
         val userFriendships = userFriendshipsQuery.dataObjects<FriendshipData>()
 
-        val friendIds = userFriendships
-            .map { friendships ->
-                friendships.map { friendship ->
-                    if (friendship.requesterId == firebaseId) {
-                        friendship.responderId
-                    } else {
-                        friendship.requesterId
-                    }
+        return userFriendships.flatMapLatest { friendships ->
+            val friendFlows = friendships.map { friendship ->
+                val friendUserId = if (friendship.requesterId == firebaseId) {
+                    friendship.responderId
+                } else {
+                    friendship.requesterId
+                }
+                getUserData(friendUserId).map { userData ->
+                    userData?.let { FriendData(friendship, it) }
                 }
             }
 
-        return friendIds.flatMapLatest { ids ->
-            val userFlows = ids.map { getUserData(it) }
-
-            combine(userFlows) { users ->
-                users.mapNotNull { it }.toList()
+            combine(friendFlows) { friends ->
+                friends.mapNotNull { it }.toList()
             }
         }
     }

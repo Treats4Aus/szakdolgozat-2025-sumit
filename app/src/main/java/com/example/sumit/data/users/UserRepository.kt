@@ -20,5 +20,5 @@ interface UserRepository {
 
     suspend fun validateEmail(email: String): Boolean
 
-    fun getUserFriends(firebaseId: String): Flow<List<UserData>>
+    fun getUserFriends(firebaseId: String): Flow<List<FriendData>>
 }

@@ -31,8 +31,10 @@
     <string name="save_note">Save note</string>
     <string name="view_note">View note</string>
     <string name="edit_note">Edit note</string>
+    <string name="delete_note">Delete note</string>
     <string name="note">Note</string>
     <string name="summary">Summary</string>
+    <string name="last_modified">Last modified: %1$s</string>
 
     <string name="recent_notes">Recent notes</string>
     <string name="shared_with_you">Shared with you</string>
@@ -83,4 +85,9 @@
     <string name="password_must_contain_uppercase">Password must contain uppercase letters</string>
     <string name="password_must_not_contain_whitespace">Password must not contain whitespaces</string>
     <string name="must_sign_in_first">You must sign in first</string>
+
+    <string name="friends_since">Friends since %1$s</string>
+    <string name="manage_friend">Manage friend</string>
+    <string name="remove_friend">Remove friend</string>
+    <string name="block_friend">Block friend</string>
 </resources>
