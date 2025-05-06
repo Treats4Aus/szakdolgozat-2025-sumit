@@ -28,17 +28,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -58,6 +63,7 @@ import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.common.FriendCard
 import com.example.sumit.ui.common.OutlinedPasswordField
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileTab(
@@ -102,7 +108,8 @@ fun ProfileTab(
                     onNewPasswordChange = viewModel::updateNewPassword,
                     onNewPasswordConfirmChange = viewModel::updateNewPasswordConfirm,
                     onSubmit = viewModel::changePassword,
-                    onSignOut = viewModel::signOut
+                    onSignOut = viewModel::signOut,
+                    onSendFriendRequest = viewModel::sendFriendRequest
                 )
             } else {
                 AnonymousScreen(
@@ -141,8 +148,14 @@ fun LoggedInScreen(
     onNewPasswordConfirmChange: (String) -> Unit,
     onSubmit: () -> Unit,
     onSignOut: () -> Unit,
+    onSendFriendRequest: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showModalBottomSheet by remember { mutableStateOf(false) }
+    var newFriendEmail by remember { mutableStateOf("") }
+
     LazyColumn(
         modifier = modifier
             .padding(horizontal = dimensionResource(R.dimen.large_padding)),
@@ -179,7 +192,7 @@ fun LoggedInScreen(
                 )
 
                 TextButton(
-                    onClick = { }
+                    onClick = { showModalBottomSheet = true }
                 ) {
                     Row {
                         Icon(
@@ -206,7 +219,53 @@ fun LoggedInScreen(
                 NoFriends()
             }
         }
+    }
 
+    if (showModalBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showModalBottomSheet = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = dimensionResource(R.dimen.medium_padding))
+                    .padding(bottom = dimensionResource(R.dimen.large_padding)),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.add_friend_via_email),
+                    style = MaterialTheme.typography.displayLarge,
+                )
+
+                OutlinedTextField(
+                    value = newFriendEmail,
+                    onValueChange = { newFriendEmail = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = dimensionResource(R.dimen.medium_padding)),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Done
+                    ),
+                    placeholder = { Text(stringResource(R.string.enter_user_email)) }
+                )
+
+                Button(
+                    onClick = {
+                        onSendFriendRequest(newFriendEmail)
+
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showModalBottomSheet = false
+                            }
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.send_request))
+                }
+            }
+        }
     }
 }
 
@@ -505,7 +564,8 @@ private fun LoggedInPreview() {
         onNewPasswordChange = { },
         onNewPasswordConfirmChange = { },
         onSubmit = { },
-        onSignOut = { }
+        onSignOut = { },
+        onSendFriendRequest = { }
     )
 }
 

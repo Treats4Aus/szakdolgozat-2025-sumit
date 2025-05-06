@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
 import com.example.sumit.data.translations.TranslationsRepository
+import com.example.sumit.data.users.FriendshipStatus
 import com.example.sumit.data.users.UserRepository
 import com.example.sumit.utils.PasswordValidator
 import com.example.sumit.utils.TIMEOUT_MILLIS
 import com.example.sumit.utils.TranslationPasswordValidator
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -197,6 +199,38 @@ class ProfileViewModel(
         userRepository.signOut()
 
         resetPasswordChangeForm()
+    }
+
+    fun sendFriendRequest(email: String) {
+        currentUser.value?.let {
+            viewModelScope.launch {
+                if (!userRepository.validateEmail(email)) {
+                    setMessage(translationsRepository.getTranslation(R.string.no_user_with_email))
+                    return@launch
+                }
+
+                when (userRepository.checkFriendshipStatus(it.uid, email)) {
+                    FriendshipStatus.Accepted ->
+                        setMessage(translationsRepository.getTranslation(R.string.user_already_friend))
+
+                    FriendshipStatus.Blocked ->
+                        setMessage(translationsRepository.getTranslation(R.string.user_blocked_you))
+
+                    FriendshipStatus.Pending ->
+                        setMessage(translationsRepository.getTranslation(R.string.friend_request_already_pending))
+
+                    else -> try {
+                        userRepository.sendFriendRequest(it.uid, email)
+                        setMessage(translationsRepository.getTranslation(R.string.friend_request_sent))
+                    } catch (e: Exception) {
+                        if (e is CancellationException) {
+                            throw e
+                        }
+                        setMessage(translationsRepository.getTranslation(R.string.friend_request_failed))
+                    }
+                }
+            }
+        }
     }
 
     fun resetMessage() {

@@ -7,6 +7,7 @@ import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.dataObjects
+import com.google.firebase.firestore.toObjects
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 private const val USER_COLLECTION_NAME = "users"
 private const val FRIENDSHIP_COLLECTION_NAME = "friendships"
@@ -90,6 +92,40 @@ class FirebaseUserRepository(
         return result.count == 1L
     }
 
+    override suspend fun checkFriendshipStatus(
+        firebaseId: String,
+        email: String
+    ): FriendshipStatus? {
+        val userCollection = store.collection(USER_COLLECTION_NAME)
+        val emailFieldName = "email"
+
+        val userQuery = userCollection.whereEqualTo(emailFieldName, email).limit(1L)
+        val user = userQuery.get().await().toObjects<UserData>().firstOrNull()
+            ?: throw Exception("User with specified email does not exist")
+
+        val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
+        val requesterFieldName = "requesterId"
+        val responderFieldName = "responderId"
+
+        val friendshipQuery = friendshipCollection
+            .where(
+                Filter.or(
+                    Filter.and(
+                        Filter.equalTo(requesterFieldName, firebaseId),
+                        Filter.equalTo(responderFieldName, user.id)
+                    ),
+                    Filter.and(
+                        Filter.equalTo(requesterFieldName, user.id),
+                        Filter.equalTo(responderFieldName, firebaseId)
+                    )
+                )
+            )
+            .limit(1L)
+        val friendship = friendshipQuery.get().await().toObjects<FriendshipData>().firstOrNull()
+
+        return friendship?.status?.let { FriendshipStatus.valueOf(it) }
+    }
+
     override fun getUserFriends(firebaseId: String): Flow<List<FriendData>> {
         val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
         val requesterFieldName = "requesterId"
@@ -115,6 +151,53 @@ class FirebaseUserRepository(
                     friendship.requesterId
                 }
                 getUserData(friendUserId).map { userData ->
+                    userData?.let { FriendData(friendship, it) }
+                }
+            }
+
+            combine(friendFlows) { friends ->
+                friends.mapNotNull { it }.toList()
+            }
+        }
+    }
+
+    override suspend fun sendFriendRequest(firebaseId: String, email: String) {
+        val userCollection = store.collection(USER_COLLECTION_NAME)
+        val emailFieldName = "email"
+
+        val userQuery = userCollection.whereEqualTo(emailFieldName, email).limit(1L)
+        val user = userQuery.get().await().toObjects(UserData::class.java).firstOrNull()
+            ?: throw Exception("User with specified email does not exist")
+
+        val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
+        val documentRef = friendshipCollection.document()
+
+        val friendshipData = FriendshipData(
+            id = documentRef.id,
+            requesterId = firebaseId,
+            responderId = user.id,
+            requestTime = Date().time,
+            status = FriendshipStatus.Pending.toString()
+        )
+        documentRef.set(friendshipData).await()
+    }
+
+    override fun getFriendRequests(firebaseId: String): Flow<List<FriendData>> {
+        val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
+        val responderFieldName = "responderId"
+        val statusFieldName = "status"
+
+        val userFriendshipsQuery = friendshipCollection.where(
+            Filter.and(
+                Filter.equalTo(responderFieldName, firebaseId),
+                Filter.equalTo(statusFieldName, FriendshipStatus.Pending.toString())
+            )
+        )
+        val pendingFriendships = userFriendshipsQuery.dataObjects<FriendshipData>()
+
+        return pendingFriendships.flatMapLatest { friendships ->
+            val friendFlows = friendships.map { friendship ->
+                getUserData(friendship.requesterId).map { userData ->
                     userData?.let { FriendData(friendship, it) }
                 }
             }

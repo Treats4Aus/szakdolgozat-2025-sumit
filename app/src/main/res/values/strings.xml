@@ -90,4 +90,13 @@
     <string name="manage_friend">Manage friend</string>
     <string name="remove_friend">Remove friend</string>
     <string name="block_friend">Block friend</string>
+    <string name="add_friend_via_email">Add a friend via email</string>
+    <string name="send_request">Send request</string>
+    <string name="friend_request_sent">Friend request sent</string>
+    <string name="friend_request_failed">Friend request failed</string>
+    <string name="no_user_with_email">No user with this email</string>
+    <string name="enter_user_email">Enter the user\'s email address</string>
+    <string name="user_already_friend">User is already friend</string>
+    <string name="user_blocked_you">User has blocked you</string>
+    <string name="friend_request_already_pending">Friend request is already pending</string>
 </resources>
