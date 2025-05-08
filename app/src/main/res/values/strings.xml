@@ -108,4 +108,6 @@
     <string name="friend_request_rejected">Friend request rejected</string>
     <string name="user_blocked">User successfully blocked</string>
     <string name="friend_removed">Friend removed</string>
+
+    <string name="settings">Settings</string>
 </resources>

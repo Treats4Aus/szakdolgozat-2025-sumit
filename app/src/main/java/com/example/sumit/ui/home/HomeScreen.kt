@@ -19,9 +19,11 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -68,6 +70,7 @@ fun HomeScreen(
     onViewNote: (Int) -> Unit,
     onEditNote: (Int) -> Unit,
     onRegister: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var currentTab by rememberSaveable { mutableStateOf(HomeTab.Recent) }
@@ -99,7 +102,15 @@ fun HomeScreen(
             topBar = {
                 SumItAppBar(
                     title = stringResource(HomeDestination.titleRes),
-                    canNavigateBack = false
+                    canNavigateBack = false,
+                    contextButton = {
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Open settings"
+                            )
+                        }
+                    }
                 )
             },
             bottomBar = {
