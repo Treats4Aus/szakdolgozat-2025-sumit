@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
 import com.example.sumit.data.translations.TranslationsRepository
+import com.example.sumit.data.users.FriendData
 import com.example.sumit.data.users.FriendshipStatus
 import com.example.sumit.data.users.UserRepository
 import com.example.sumit.utils.PasswordValidator
@@ -231,6 +232,26 @@ class ProfileViewModel(
                 }
             }
         }
+    }
+
+    fun acceptFriendRequest(friendData: FriendData) = viewModelScope.launch {
+        userRepository.acceptFriendRequest(friendData.friendshipData)
+        setMessage(translationsRepository.getTranslation(R.string.friend_request_accepted))
+    }
+
+    fun rejectFriendRequest(friendData: FriendData) = viewModelScope.launch {
+        userRepository.rejectFriendRequest(friendData.friendshipData)
+        setMessage(translationsRepository.getTranslation(R.string.friend_request_rejected))
+    }
+
+    fun removeFriend(friendData: FriendData) = viewModelScope.launch {
+        userRepository.rejectFriendRequest(friendData.friendshipData)
+        setMessage(translationsRepository.getTranslation(R.string.friend_removed))
+    }
+
+    fun blockFriend(friendData: FriendData) = viewModelScope.launch {
+        userRepository.blockFriend(friendData.friendshipData)
+        setMessage(translationsRepository.getTranslation(R.string.user_blocked))
     }
 
     fun resetMessage() {

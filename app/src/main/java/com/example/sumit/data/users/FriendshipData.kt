@@ -11,6 +11,5 @@ data class FriendshipData(
 enum class FriendshipStatus {
     Pending,
     Accepted,
-    Rejected,
     Blocked
 }

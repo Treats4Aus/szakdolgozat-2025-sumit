@@ -41,8 +41,9 @@ class FirebaseUserRepository(
         auth.signInWithEmailAndPassword(email, password).await()
     }
 
-    override suspend fun registerWithEmailAndPassword(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password).await()
+    override suspend fun registerWithEmailAndPassword(email: String, password: String): String? {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        return result.user?.uid
     }
 
     override suspend fun changePassword(
@@ -130,15 +131,11 @@ class FirebaseUserRepository(
         val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
         val requesterFieldName = "requesterId"
         val responderFieldName = "responderId"
-        val statusFieldName = "status"
 
         val userFriendshipsQuery = friendshipCollection.where(
-            Filter.and(
-                Filter.or(
-                    Filter.equalTo(requesterFieldName, firebaseId),
-                    Filter.equalTo(responderFieldName, firebaseId)
-                ),
-                Filter.equalTo(statusFieldName, FriendshipStatus.Accepted.toString())
+            Filter.or(
+                Filter.equalTo(requesterFieldName, firebaseId),
+                Filter.equalTo(responderFieldName, firebaseId)
             )
         )
         val userFriendships = userFriendshipsQuery.dataObjects<FriendshipData>()
@@ -182,29 +179,21 @@ class FirebaseUserRepository(
         documentRef.set(friendshipData).await()
     }
 
-    override fun getFriendRequests(firebaseId: String): Flow<List<FriendData>> {
+    override suspend fun acceptFriendRequest(friendshipData: FriendshipData) {
         val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
-        val responderFieldName = "responderId"
-        val statusFieldName = "status"
+        val documentRef = friendshipCollection.document(friendshipData.id)
+        documentRef.set(friendshipData.copy(status = FriendshipStatus.Accepted.toString())).await()
+    }
 
-        val userFriendshipsQuery = friendshipCollection.where(
-            Filter.and(
-                Filter.equalTo(responderFieldName, firebaseId),
-                Filter.equalTo(statusFieldName, FriendshipStatus.Pending.toString())
-            )
-        )
-        val pendingFriendships = userFriendshipsQuery.dataObjects<FriendshipData>()
+    override suspend fun rejectFriendRequest(friendshipData: FriendshipData) {
+        val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
+        val documentRef = friendshipCollection.document(friendshipData.id)
+        documentRef.delete().await()
+    }
 
-        return pendingFriendships.flatMapLatest { friendships ->
-            val friendFlows = friendships.map { friendship ->
-                getUserData(friendship.requesterId).map { userData ->
-                    userData?.let { FriendData(friendship, it) }
-                }
-            }
-
-            combine(friendFlows) { friends ->
-                friends.mapNotNull { it }.toList()
-            }
-        }
+    override suspend fun blockFriend(friendshipData: FriendshipData) {
+        val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
+        val documentRef = friendshipCollection.document(friendshipData.id)
+        documentRef.set(friendshipData.copy(status = FriendshipStatus.Blocked.toString())).await()
     }
 }

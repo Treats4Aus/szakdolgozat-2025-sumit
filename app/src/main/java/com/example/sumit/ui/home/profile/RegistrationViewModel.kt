@@ -11,7 +11,6 @@ import com.example.sumit.utils.TranslationPasswordValidator
 import com.google.firebase.FirebaseException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -78,18 +77,18 @@ class RegistrationViewModel(
             setRegistrationState(RegistrationState.Loading)
 
             try {
-                userRepository.registerWithEmailAndPassword(form.email, form.password)
+                val userId = userRepository.registerWithEmailAndPassword(form.email, form.password)
 
-                userRepository.currentUser.lastOrNull()?.let {
+                userRepository.signInWithEmailAndPassword(form.email, form.password)
+
+                userId?.let {
                     userRepository.createUserData(
-                        firebaseId = it.uid,
+                        firebaseId = it,
                         email = form.email,
                         name = form.name,
                         username = form.username,
                     )
                 }
-
-                userRepository.signInWithEmailAndPassword(form.email, form.password)
 
                 setMessage(translationsRepository.getTranslation(R.string.successful_registration))
                 setRegistrationState(RegistrationState.Finished)

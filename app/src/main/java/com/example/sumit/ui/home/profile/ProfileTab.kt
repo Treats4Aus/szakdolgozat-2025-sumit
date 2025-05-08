@@ -58,10 +58,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.data.users.FriendData
+import com.example.sumit.data.users.FriendshipStatus
 import com.example.sumit.data.users.UserData
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.common.FriendCard
+import com.example.sumit.ui.common.FriendRequestCard
 import com.example.sumit.ui.common.OutlinedPasswordField
 import kotlinx.coroutines.launch
 
@@ -77,6 +79,10 @@ fun ProfileTab(
     val currentUser by viewModel.currentUser.collectAsState()
     val userData by viewModel.userData.collectAsState()
     val friendList by viewModel.friendList.collectAsState()
+    val friendRequests = friendList.filter {
+        it.friendshipData.status == FriendshipStatus.Pending.toString()
+                && it.friendshipData.responderId == currentUser?.uid
+    }
 
     val currentMessage by viewModel.currentMessageRes.collectAsState()
 
@@ -102,14 +108,21 @@ fun ProfileTab(
                 LoggedInScreen(
                     uiState = passwordChangeUiState,
                     userData = userData ?: UserData(),
-                    friendList = friendList,
+                    friendRequests = friendRequests,
+                    friendList = friendList.filter {
+                        it.friendshipData.status == FriendshipStatus.Accepted.toString()
+                    },
                     onVisibilityToggle = viewModel::togglePasswordChangeFormVisibility,
                     onCurrentPasswordChange = viewModel::updateCurrentPassword,
                     onNewPasswordChange = viewModel::updateNewPassword,
                     onNewPasswordConfirmChange = viewModel::updateNewPasswordConfirm,
                     onSubmit = viewModel::changePassword,
                     onSignOut = viewModel::signOut,
-                    onSendFriendRequest = viewModel::sendFriendRequest
+                    onSendFriendRequest = viewModel::sendFriendRequest,
+                    onAcceptRequest = viewModel::acceptFriendRequest,
+                    onRejectRequest = viewModel::rejectFriendRequest,
+                    onRemoveFriend = viewModel::removeFriend,
+                    onBlockFriend = viewModel::blockFriend
                 )
             } else {
                 AnonymousScreen(
@@ -141,6 +154,7 @@ fun ProfileTab(
 fun LoggedInScreen(
     uiState: PasswordChangeUiState,
     userData: UserData,
+    friendRequests: List<FriendData>,
     friendList: List<FriendData>,
     onVisibilityToggle: () -> Unit,
     onCurrentPasswordChange: (String) -> Unit,
@@ -149,6 +163,10 @@ fun LoggedInScreen(
     onSubmit: () -> Unit,
     onSignOut: () -> Unit,
     onSendFriendRequest: (String) -> Unit,
+    onAcceptRequest: (FriendData) -> Unit,
+    onRejectRequest: (FriendData) -> Unit,
+    onRemoveFriend: (FriendData) -> Unit,
+    onBlockFriend: (FriendData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -178,9 +196,27 @@ fun LoggedInScreen(
                 onSubmit = onSubmit,
                 onSignOut = onSignOut
             )
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
+        if (friendRequests.isNotEmpty()) {
+            item {
+                Text(
+                    text = stringResource(R.string.pending_friend_requests),
+                    style = MaterialTheme.typography.displayLarge
+                )
+            }
 
+            items(friendRequests, { "${it.friendshipData.id}-request" }) {
+                FriendRequestCard(
+                    friendData = it,
+                    onAccept = { onAcceptRequest(it) },
+                    onReject = { onRejectRequest(it) },
+                    onBlock = { onBlockFriend(it) }
+                )
+            }
+        }
+
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -210,8 +246,8 @@ fun LoggedInScreen(
             items(friendList, { it.friendshipData.id }) {
                 FriendCard(
                     friendData = it,
-                    onRemoveFriend = { },
-                    onBlockFriend = { },
+                    onRemoveFriend = { onRemoveFriend(it) },
+                    onBlockFriend = { onBlockFriend(it) },
                 )
             }
         } else {
@@ -558,6 +594,7 @@ private fun LoggedInPreview() {
     LoggedInScreen(
         uiState = mockUiState,
         userData = mockUserData,
+        friendRequests = emptyList(),
         friendList = emptyList(),
         onVisibilityToggle = { },
         onCurrentPasswordChange = { },
@@ -565,7 +602,11 @@ private fun LoggedInPreview() {
         onNewPasswordConfirmChange = { },
         onSubmit = { },
         onSignOut = { },
-        onSendFriendRequest = { }
+        onSendFriendRequest = { },
+        onAcceptRequest = { },
+        onRejectRequest = { },
+        onRemoveFriend = { },
+        onBlockFriend = { }
     )
 }
 

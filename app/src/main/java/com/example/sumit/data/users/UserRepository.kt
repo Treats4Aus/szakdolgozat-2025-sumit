@@ -8,7 +8,7 @@ interface UserRepository {
 
     suspend fun signInWithEmailAndPassword(email: String, password: String)
 
-    suspend fun registerWithEmailAndPassword(email: String, password: String)
+    suspend fun registerWithEmailAndPassword(email: String, password: String): String?
 
     suspend fun changePassword(email: String, currentPassword: String, newPassword: String)
 
@@ -26,5 +26,9 @@ interface UserRepository {
 
     suspend fun sendFriendRequest(firebaseId: String, email: String)
 
-    fun getFriendRequests(firebaseId: String): Flow<List<FriendData>>
+    suspend fun acceptFriendRequest(friendshipData: FriendshipData)
+
+    suspend fun rejectFriendRequest(friendshipData: FriendshipData)
+
+    suspend fun blockFriend(friendshipData: FriendshipData)
 }
