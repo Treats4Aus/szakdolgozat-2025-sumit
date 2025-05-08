@@ -76,6 +76,9 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
+    // Datastore
+    implementation(libs.androidx.datastore.preferences)
+
     // Concurrency helpers
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.coroutines.guava)

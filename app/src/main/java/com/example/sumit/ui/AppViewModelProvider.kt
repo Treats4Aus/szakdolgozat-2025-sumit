@@ -15,6 +15,7 @@ import com.example.sumit.ui.notes.ViewNoteViewModel
 import com.example.sumit.ui.scan.PhotoProcessViewModel
 import com.example.sumit.ui.scan.PhotoSegmentViewModel
 import com.example.sumit.ui.scan.PhotoSelectViewModel
+import com.example.sumit.ui.settings.SettingsViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -41,6 +42,12 @@ object AppViewModelProvider {
             RegistrationViewModel(
                 userRepository = sumItApplication().container.userRepository,
                 translationsRepository = sumItApplication().container.translationsRepository
+            )
+        }
+
+        initializer {
+            SettingsViewModel(
+                preferencesRepository = sumItApplication().container.preferencesRepository
             )
         }
 
