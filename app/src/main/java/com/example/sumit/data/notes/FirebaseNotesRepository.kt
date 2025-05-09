@@ -1,6 +1,7 @@
 package com.example.sumit.data.notes
 
 import android.content.Context
+import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 
+private const val TAG = "FirebaseNotesRepository"
 private const val NOTE_COLLECTION_NAME = "notes"
 
 class FirebaseNotesRepository(
@@ -53,6 +55,8 @@ class FirebaseNotesRepository(
     }
 
     override fun startSync() {
+        Log.d(TAG, "Starting sync work")
+
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED)
             .setRequiresBatteryNotLow(true)
@@ -71,6 +75,8 @@ class FirebaseNotesRepository(
     }
 
     override fun cancelSync() {
+        Log.d(TAG, "Cancelling sync work")
+
         workManager.cancelUniqueWork(SYNC_NOTES_WORK_NAME)
     }
 }

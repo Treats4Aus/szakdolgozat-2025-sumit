@@ -47,7 +47,8 @@ object AppViewModelProvider {
 
         initializer {
             SettingsViewModel(
-                preferencesRepository = sumItApplication().container.preferencesRepository
+                preferencesRepository = sumItApplication().container.preferencesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository
             )
         }
 

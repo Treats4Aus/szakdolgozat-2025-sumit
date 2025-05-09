@@ -14,18 +14,16 @@ import kotlinx.coroutines.launch
 private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
-    private lateinit var application: SumItApplication
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
-            application = applicationContext as SumItApplication
-            val syncRequested = application.container.preferencesRepository.syncPreference.first()
+            val app = applicationContext as SumItApplication
+            val syncRequested = app.container.preferencesRepository.syncPreference.first()
 
             if (syncRequested) {
                 Log.d(TAG, "Syncing notes requested")
-                val notesRepository = application.container.remoteNotesRepository
+                val notesRepository = app.container.remoteNotesRepository
                 notesRepository.startSync()
             }
         }
@@ -36,12 +34,5 @@ class MainActivity : ComponentActivity() {
                 SumItApp()
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        val notesRepository = application.container.remoteNotesRepository
-        notesRepository.cancelSync()
     }
 }
