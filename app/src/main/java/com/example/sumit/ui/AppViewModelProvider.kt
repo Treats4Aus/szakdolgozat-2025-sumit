@@ -75,6 +75,7 @@ object AppViewModelProvider {
         initializer {
             ViewNoteViewModel(
                 notesRepository = sumItApplication().container.notesRepository,
+                userRepository = sumItApplication().container.userRepository,
                 savedStateHandle = this.createSavedStateHandle()
             )
         }

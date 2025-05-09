@@ -19,8 +19,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -57,15 +61,27 @@ fun ViewNoteScreen(
     viewModel: ViewNoteViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val viewedNote by viewModel.viewedNoteUiState.collectAsState()
+    val friendList by viewModel.friendList.collectAsState()
 
     var showingSummary by remember { mutableStateOf(false) }
+    var showingShareDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             SumItAppBar(
                 title = stringResource(ViewNoteDestination.titleRes),
                 canNavigateBack = true,
-                navigateUp = onBack
+                navigateUp = onBack,
+                contextButton = {
+                    IconButton(
+                        onClick = { showingShareDialog = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.IosShare,
+                            contentDescription = "Share this note"
+                        )
+                    }
+                }
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing
@@ -109,6 +125,14 @@ fun ViewNoteScreen(
                 onOptionSwitch = { showingSummary = it }
             )
         }
+    }
+
+    if (showingShareDialog) {
+        ShareNoteDialog(
+            friendList = friendList,
+            onShareWithFriends = viewModel::shareWithFriends,
+            onDismissRequest = { showingShareDialog = false }
+        )
     }
 }
 
