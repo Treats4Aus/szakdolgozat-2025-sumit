@@ -26,6 +26,8 @@ import com.example.sumit.ui.scan.PhotoSegmentDestination
 import com.example.sumit.ui.scan.PhotoSegmentScreen
 import com.example.sumit.ui.scan.PhotoSelectDestination
 import com.example.sumit.ui.scan.PhotoSelectScreen
+import com.example.sumit.ui.settings.SettingsDestination
+import com.example.sumit.ui.settings.SettingsScreen
 
 private const val SLIDE_DURATION = 400
 
@@ -66,12 +68,19 @@ fun SumItNavHost(
                 },
                 onRegister = {
                     navController.navigate(RegisterDestination.route)
+                },
+                onOpenSettings = {
+                    navController.navigate(SettingsDestination.route)
                 }
             )
         }
 
         composable(route = RegisterDestination.route) {
             RegisterScreen(onBack = { navController.navigateUp() })
+        }
+
+        composable(route = SettingsDestination.route) {
+            SettingsScreen(onBack = { navController.navigateUp() })
         }
 
         composable(

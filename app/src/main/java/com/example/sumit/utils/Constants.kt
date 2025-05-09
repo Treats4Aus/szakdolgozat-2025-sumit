@@ -4,6 +4,7 @@ const val SAVE_PHOTOS_WORK_NAME = "save_photos_work"
 const val OUTPUT_PATH = "temp_photos"
 const val PHOTO_TYPE_TEMP = "temp"
 const val PHOTO_TYPE_SEGMENTED = "segmented"
+const val SYNC_NOTES_WORK_NAME = "sync_notes_work"
 
 const val KEY_PHOTO_URI = "KEY_PHOTO_URI"
 const val KEY_PHOTO_INDEX = "KEY_PHOTO_INDEX"
