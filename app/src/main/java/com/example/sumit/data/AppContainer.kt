@@ -2,8 +2,10 @@ package com.example.sumit.data
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.sumit.data.notes.FirebaseNotesRepository
 import com.example.sumit.data.notes.LocalNotesRepository
 import com.example.sumit.data.notes.NotesRepository
+import com.example.sumit.data.notes.RemoteNotesRepository
 import com.example.sumit.data.photos.PhotosRepository
 import com.example.sumit.data.photos.WorkManagerPhotosRepository
 import com.example.sumit.data.preferences.DataStorePreferencesRepository
@@ -27,6 +29,8 @@ interface AppContainer {
     val translationsRepository: TranslationsRepository
 
     val preferencesRepository: PreferencesRepository
+
+    val remoteNotesRepository: RemoteNotesRepository
 
     val inferenceModel: InferenceModel
 }
@@ -54,6 +58,11 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val preferencesRepository: PreferencesRepository by lazy {
         DataStorePreferencesRepository(context.dataStore)
+    }
+
+    override val remoteNotesRepository: RemoteNotesRepository by lazy {
+        val store = Firebase.firestore
+        FirebaseNotesRepository(context, store)
     }
 
     override val inferenceModel: InferenceModel by lazy {
