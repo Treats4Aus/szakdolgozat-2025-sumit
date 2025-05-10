@@ -1,5 +1,6 @@
 package com.example.sumit.ui.settings
 
+import android.app.Activity
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,17 +26,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
 import com.example.sumit.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
 
 object SettingsDestination : NavigationDestination {
     override val route = "settings"
@@ -55,7 +62,10 @@ fun SettingsScreen(
 ) {
     val syncEnabled by viewModel.syncEnabled.collectAsState()
     val langCode by viewModel.langCode.collectAsState()
-    val langDisplayRes = LangOption.valueOf(langCode)
+    val langDisplayRes = LangOption.valueOf(langCode.toUpperCase(Locale.current))
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var expanded by remember { mutableStateOf(false) }
 
@@ -152,8 +162,14 @@ fun SettingsScreen(
                                         Text(stringResource(lang.displayNameRes))
                                     },
                                     onClick = {
-                                        viewModel.updateLangPreference(lang.name)
-                                        expanded = false
+                                        scope.launch {
+                                            val language = lang.name.toLowerCase(Locale.current)
+
+                                            viewModel.updateLangPreference(language)
+                                            expanded = false
+
+                                            (context as Activity).recreate()
+                                        }
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                                 )
