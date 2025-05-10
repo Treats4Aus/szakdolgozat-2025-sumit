@@ -55,6 +55,11 @@ class FirebaseNotesRepository(
         noteCollection.document(remoteNote.id).set(remoteNote).await()
     }
 
+    override suspend fun deleteNote(id: String) {
+        val noteCollection = store.collection(NOTE_COLLECTION_NAME)
+        noteCollection.document(id).delete().await()
+    }
+
     override fun startSync() {
         Log.d(TAG, "Starting sync work")
 

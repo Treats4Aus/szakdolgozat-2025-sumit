@@ -9,6 +9,8 @@ interface RemoteNotesRepository {
 
     suspend fun updateNote(remoteNote: RemoteNote)
 
+    suspend fun deleteNote(id: String)
+
     fun startSync()
 
     fun cancelSync()

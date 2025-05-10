@@ -14,4 +14,6 @@ class LocalNotesRepository(private val noteDao: NoteDao) : NotesRepository {
     override suspend fun updateNote(note: Note) = noteDao.update(note)
 
     override suspend fun deleteNote(note: Note) = noteDao.delete(note)
+
+    override suspend fun clearNotes() = noteDao.deleteAll()
 }

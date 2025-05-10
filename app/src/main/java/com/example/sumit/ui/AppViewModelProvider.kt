@@ -27,13 +27,15 @@ object AppViewModelProvider {
 
         initializer {
             MyNotesViewModel(
-                notesRepository = sumItApplication().container.notesRepository
+                notesRepository = sumItApplication().container.notesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository
             )
         }
 
         initializer {
             ProfileViewModel(
                 userRepository = sumItApplication().container.userRepository,
+                notesRepository = sumItApplication().container.notesRepository,
                 translationsRepository = sumItApplication().container.translationsRepository
             )
         }
