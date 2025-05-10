@@ -20,15 +20,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.NoteCard
+import java.util.Date
 
 @Composable
 fun RecentNotesTab(
     onViewOwnedNote: (Int) -> Unit,
-    onViewSharedNote: (Int) -> Unit,
+    onViewSharedNote: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RecentNotesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val recentNotes by viewModel.recentNotes.collectAsState()
+    val sharedNotes by viewModel.sharedNotes.collectAsState()
 
     LazyColumn(
         modifier = modifier,
@@ -45,7 +47,9 @@ fun RecentNotesTab(
         if (recentNotes.isNotEmpty()) {
             items(recentNotes) {
                 NoteCard(
-                    note = it,
+                    title = it.title,
+                    content = it.content,
+                    lastModified = it.lastModified,
                     canModify = false,
                     onNoteClick = { onViewOwnedNote(it.id) }
                 )
@@ -63,8 +67,20 @@ fun RecentNotesTab(
             )
         }
 
-        item {
-            NoSharedNotes(isSignedIn = false)
+        if (sharedNotes.isNotEmpty()) {
+            items(sharedNotes) {
+                NoteCard(
+                    title = it.title,
+                    content = it.content,
+                    lastModified = Date(it.lastModified),
+                    canModify = false,
+                    onNoteClick = { onViewSharedNote(it.id) }
+                )
+            }
+        } else {
+            item {
+                NoSharedNotes(isSignedIn = false)
+            }
         }
     }
 }

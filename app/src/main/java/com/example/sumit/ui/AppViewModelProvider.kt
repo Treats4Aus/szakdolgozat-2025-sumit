@@ -21,7 +21,9 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
             RecentNotesViewModel(
-                notesRepository = sumItApplication().container.notesRepository
+                notesRepository = sumItApplication().container.notesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository,
+                userRepository = sumItApplication().container.userRepository
             )
         }
 

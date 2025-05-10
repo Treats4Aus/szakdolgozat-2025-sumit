@@ -32,6 +32,21 @@ class FirebaseNotesRepository(
         return userNotesQuery.dataObjects<RemoteNote>()
     }
 
+    override fun getUserSharedNotes(firebaseId: String): Flow<List<RemoteNote>> {
+        val noteCollection = store.collection(NOTE_COLLECTION_NAME)
+        val sharedWithFieldName = "sharedWith"
+
+        val userSharedNotesQuery =
+            noteCollection.whereArrayContains(sharedWithFieldName, firebaseId)
+        return userSharedNotesQuery.dataObjects<RemoteNote>()
+    }
+
+    override fun getNote(id: String): Flow<RemoteNote?> {
+        val noteCollection = store.collection(NOTE_COLLECTION_NAME)
+        val documentRef = noteCollection.document(id)
+        return documentRef.dataObjects<RemoteNote>()
+    }
+
     override suspend fun uploadNote(firebaseId: String, localNote: Note): String {
         val noteCollection = store.collection(NOTE_COLLECTION_NAME)
         val documentRef = noteCollection.document()
