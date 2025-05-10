@@ -69,6 +69,7 @@ fun HomeScreen(
     onNewScan: (Boolean) -> Unit,
     onViewNote: (Int) -> Unit,
     onEditNote: (Int) -> Unit,
+    onViewSharedNote: (String) -> Unit,
     onRegister: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
@@ -137,7 +138,7 @@ fun HomeScreen(
                 when (currentTab) {
                     HomeTab.Recent -> RecentNotesTab(
                         onViewOwnedNote = onViewNote,
-                        onViewSharedNote = { }
+                        onViewSharedNote = onViewSharedNote
                     )
 
                     HomeTab.Notes -> MyNotesTab(

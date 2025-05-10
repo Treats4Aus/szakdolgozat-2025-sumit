@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
+import com.example.sumit.data.notes.NotesRepository
 import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.FriendData
 import com.example.sumit.data.users.FriendshipStatus
@@ -29,6 +30,7 @@ private const val TAG = "ProfileViewModel"
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
     private val userRepository: UserRepository,
+    private val notesRepository: NotesRepository,
     private val translationsRepository: TranslationsRepository
 ) : ViewModel() {
     private val passwordValidator: PasswordValidator =
@@ -198,8 +200,11 @@ class ProfileViewModel(
 
     fun signOut() {
         userRepository.signOut()
-
         resetPasswordChangeForm()
+
+        viewModelScope.launch {
+            notesRepository.clearNotes()
+        }
     }
 
     fun sendFriendRequest(email: String) {

@@ -32,7 +32,22 @@ class FirebaseNotesRepository(
         return userNotesQuery.dataObjects<RemoteNote>()
     }
 
-    override suspend fun uploadNote(firebaseId: String, localNote: Note) {
+    override fun getUserSharedNotes(firebaseId: String): Flow<List<RemoteNote>> {
+        val noteCollection = store.collection(NOTE_COLLECTION_NAME)
+        val sharedWithFieldName = "sharedWith"
+
+        val userSharedNotesQuery =
+            noteCollection.whereArrayContains(sharedWithFieldName, firebaseId)
+        return userSharedNotesQuery.dataObjects<RemoteNote>()
+    }
+
+    override fun getNote(id: String): Flow<RemoteNote?> {
+        val noteCollection = store.collection(NOTE_COLLECTION_NAME)
+        val documentRef = noteCollection.document(id)
+        return documentRef.dataObjects<RemoteNote>()
+    }
+
+    override suspend fun uploadNote(firebaseId: String, localNote: Note): String {
         val noteCollection = store.collection(NOTE_COLLECTION_NAME)
         val documentRef = noteCollection.document()
 
@@ -47,11 +62,17 @@ class FirebaseNotesRepository(
             keywords = emptyList()
         )
         documentRef.set(remoteNote).await()
+        return documentRef.id
     }
 
     override suspend fun updateNote(remoteNote: RemoteNote) {
         val noteCollection = store.collection(NOTE_COLLECTION_NAME)
         noteCollection.document(remoteNote.id).set(remoteNote).await()
+    }
+
+    override suspend fun deleteNote(id: String) {
+        val noteCollection = store.collection(NOTE_COLLECTION_NAME)
+        noteCollection.document(id).delete().await()
     }
 
     override fun startSync() {

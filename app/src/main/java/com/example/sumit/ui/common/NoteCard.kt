@@ -28,24 +28,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.sumit.R
-import com.example.sumit.data.notes.Note
-import com.example.sumit.utils.DATE_FORMAT
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteCard(
-    note: Note,
+    title: String,
+    content: String,
+    extraInfo: String,
     canModify: Boolean,
     onNoteClick: () -> Unit,
     modifier: Modifier = Modifier,
     onEditClick: () -> Unit = { },
     onDeleteClick: () -> Unit = { }
 ) {
-    val lastModifiedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
-        .format(note.lastModified)
     var expanded by remember { mutableStateOf(false) }
 
     val haptics = LocalHapticFeedback.current
@@ -72,7 +67,7 @@ fun NoteCard(
         ) {
             Column(modifier = Modifier.padding(dimensionResource(R.dimen.medium_padding))) {
                 Text(
-                    text = note.title,
+                    text = title,
                     modifier = Modifier.padding(bottom = dimensionResource(R.dimen.medium_padding)),
                     style = MaterialTheme.typography.displayMedium,
                     maxLines = 1,
@@ -81,7 +76,7 @@ fun NoteCard(
 
                 Row {
                     Text(
-                        text = note.content.replace("\n", " "),
+                        text = content.replace("\n", " "),
                         modifier = Modifier
                             .weight(2f)
                             .padding(end = dimensionResource(R.dimen.medium_padding)),
@@ -91,7 +86,7 @@ fun NoteCard(
                     )
 
                     Text(
-                        text = stringResource(R.string.last_modified, lastModifiedDate),
+                        text = extraInfo,
                         modifier = Modifier.weight(1f),
                         fontSize = 14.sp,
                         textAlign = TextAlign.End
@@ -120,16 +115,10 @@ fun NoteCard(
 @Preview
 @Composable
 private fun NoteCardPreview() {
-    val previewNote = Note(
-        created = Date(),
-        lastModified = Date(),
+    NoteCard(
         title = "Preview",
         content = "This is a preview",
-        summary = "Just a test"
-    )
-
-    NoteCard(
-        note = previewNote,
+        extraInfo = "Last modified: 2025. május 10.",
         canModify = true,
         onNoteClick = { },
         onEditClick = { },

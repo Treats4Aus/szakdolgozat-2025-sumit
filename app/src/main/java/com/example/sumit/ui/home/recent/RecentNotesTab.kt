@@ -20,15 +20,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.NoteCard
+import com.example.sumit.utils.DATE_FORMAT
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun RecentNotesTab(
     onViewOwnedNote: (Int) -> Unit,
-    onViewSharedNote: (Int) -> Unit,
+    onViewSharedNote: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RecentNotesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val recentNotes by viewModel.recentNotes.collectAsState()
+    val sharedNotes by viewModel.sharedNotes.collectAsState()
 
     LazyColumn(
         modifier = modifier,
@@ -43,11 +47,16 @@ fun RecentNotesTab(
         }
 
         if (recentNotes.isNotEmpty()) {
-            items(recentNotes) {
+            items(recentNotes, { it.id }) { note ->
+                val lastModifiedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
+                    .format(note.lastModified)
+
                 NoteCard(
-                    note = it,
+                    title = note.title,
+                    content = note.content,
+                    extraInfo = stringResource(R.string.last_modified, lastModifiedDate),
                     canModify = false,
-                    onNoteClick = { onViewOwnedNote(it.id) }
+                    onNoteClick = { onViewOwnedNote(note.id) }
                 )
             }
         } else {
@@ -63,8 +72,20 @@ fun RecentNotesTab(
             )
         }
 
-        item {
-            NoSharedNotes(isSignedIn = false)
+        if (sharedNotes.isNotEmpty()) {
+            items(sharedNotes, { it.id }) { note ->
+                NoteCard(
+                    title = note.title,
+                    content = note.content,
+                    extraInfo = stringResource(R.string.shared_by, note.owner),
+                    canModify = false,
+                    onNoteClick = { onViewSharedNote(note.id) }
+                )
+            }
+        } else {
+            item {
+                NoSharedNotes(isSignedIn = false)
+            }
         }
     }
 }

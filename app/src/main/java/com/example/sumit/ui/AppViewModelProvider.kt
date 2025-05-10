@@ -12,6 +12,7 @@ import com.example.sumit.ui.home.profile.RegistrationViewModel
 import com.example.sumit.ui.home.recent.RecentNotesViewModel
 import com.example.sumit.ui.notes.EditNoteViewModel
 import com.example.sumit.ui.notes.ViewNoteViewModel
+import com.example.sumit.ui.notes.ViewSharedNoteViewModel
 import com.example.sumit.ui.scan.PhotoProcessViewModel
 import com.example.sumit.ui.scan.PhotoSegmentViewModel
 import com.example.sumit.ui.scan.PhotoSelectViewModel
@@ -21,19 +22,23 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
             RecentNotesViewModel(
-                notesRepository = sumItApplication().container.notesRepository
+                notesRepository = sumItApplication().container.notesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository,
+                userRepository = sumItApplication().container.userRepository
             )
         }
 
         initializer {
             MyNotesViewModel(
-                notesRepository = sumItApplication().container.notesRepository
+                notesRepository = sumItApplication().container.notesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository
             )
         }
 
         initializer {
             ProfileViewModel(
                 userRepository = sumItApplication().container.userRepository,
+                notesRepository = sumItApplication().container.notesRepository,
                 translationsRepository = sumItApplication().container.translationsRepository
             )
         }
@@ -75,6 +80,9 @@ object AppViewModelProvider {
         initializer {
             ViewNoteViewModel(
                 notesRepository = sumItApplication().container.notesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository,
+                userRepository = sumItApplication().container.userRepository,
+                translationsRepository = sumItApplication().container.translationsRepository,
                 savedStateHandle = this.createSavedStateHandle()
             )
         }
@@ -82,6 +90,13 @@ object AppViewModelProvider {
         initializer {
             EditNoteViewModel(
                 notesRepository = sumItApplication().container.notesRepository,
+                savedStateHandle = this.createSavedStateHandle()
+            )
+        }
+
+        initializer {
+            ViewSharedNoteViewModel(
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository,
                 savedStateHandle = this.createSavedStateHandle()
             )
         }

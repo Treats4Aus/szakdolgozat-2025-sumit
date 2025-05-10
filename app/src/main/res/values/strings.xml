@@ -35,6 +35,8 @@
     <string name="note">Note</string>
     <string name="summary">Summary</string>
     <string name="last_modified">Last modified: %1$s</string>
+    <string name="view_shared_note">View shared note</string>
+    <string name="shared_by">Shared by %1$s</string>
 
     <string name="recent_notes">Recent notes</string>
     <string name="shared_with_you">Shared with you</string>
@@ -42,6 +44,7 @@
     <string name="use_scan_button">Use the scan button to create one now</string>
     <string name="no_shared_notes">You don\'t have any shared notes</string>
     <string name="sign_in_or_create_account">Sign in or create an account to start sharing notes</string>
+    <string name="no_notes">You don\'t have any notes</string>
 
     <string name="add_friends">Add friends and start sharing notes</string>
     <string name="email_address">Email address</string>
@@ -112,4 +115,15 @@
     <string name="settings">Settings</string>
     <string name="hungarian">Hungarian</string>
     <string name="english">English</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="share_with_selected">Share with selected</string>
+    <string name="other_sharing_options">Other sharing options</string>
+    <string name="selected_for_share">Selected for share</string>
+    <string name="select_friends_to_share">Select friends to share this note with</string>
+    <string name="you_must_select_at_least_one_person">You must select at least one person to share with</string>
+    <string name="you_must_sign_in_to_share">You must sign in to share this note</string>
+    <string name="you_must_enable_sync_to_share">You must enable syncing to share this note</string>
+    <string name="note_successfully_shared">Note successfully shared</string>
+    <string name="note_sharing_failed">Note sharing failed</string>
 </resources>

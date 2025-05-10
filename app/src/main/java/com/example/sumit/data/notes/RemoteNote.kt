@@ -8,5 +8,6 @@ data class RemoteNote(
     val title: String = "",
     val content: String = "",
     val summary: String = "",
-    val keywords: List<String> = emptyList()
+    val keywords: List<String> = emptyList(),
+    val sharedWith: List<String> = emptyList()
 )

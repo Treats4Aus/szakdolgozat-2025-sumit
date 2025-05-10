@@ -1,5 +1,6 @@
 package com.example.sumit.ui.notes
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -19,12 +21,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +51,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.SumItAppBar
+import com.example.sumit.ui.common.CircularLoadingScreenWithBackdrop
 import com.example.sumit.ui.navigation.NavigationDestination
 
 object ViewNoteDestination : NavigationDestination {
@@ -57,58 +68,105 @@ fun ViewNoteScreen(
     viewModel: ViewNoteViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val viewedNote by viewModel.viewedNoteUiState.collectAsState()
+    val friendList by viewModel.friendList.collectAsState()
+    val shareUiState by viewModel.shareUiState.collectAsState()
 
     var showingSummary by remember { mutableStateOf(false) }
+    var showingShareDialog by remember { mutableStateOf(false) }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(shareUiState.message) {
+        if (shareUiState.message.isNotEmpty()) {
+            snackBarHostState.showSnackbar(
+                message = shareUiState.message,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
             SumItAppBar(
                 title = stringResource(ViewNoteDestination.titleRes),
                 canNavigateBack = true,
-                navigateUp = onBack
+                navigateUp = onBack,
+                contextButton = {
+                    IconButton(
+                        onClick = { showingShareDialog = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.IosShare,
+                            contentDescription = "Share this note"
+                        )
+                    }
+                }
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = modifier
                 .padding(innerPadding)
-                .padding(dimensionResource(R.dimen.medium_padding))
+                .fillMaxSize()
         ) {
-            Text(
-                text = viewedNote.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = dimensionResource(R.dimen.large_padding)),
-                style = MaterialTheme.typography.displayLarge,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                modifier = modifier.padding(dimensionResource(R.dimen.medium_padding))
+            ) {
+                Text(
+                    text = viewedNote.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = dimensionResource(R.dimen.large_padding)),
+                    style = MaterialTheme.typography.displayLarge,
+                    textAlign = TextAlign.Center
+                )
 
-            Box(modifier = Modifier.weight(1f)) {
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = !showingSummary,
-                    enter = fadeIn() + slideInHorizontally(),
-                    exit = fadeOut() + slideOutHorizontally()
-                ) {
-                    NoteContent(content = viewedNote.content)
+                Box(modifier = Modifier.weight(1f)) {
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = !showingSummary,
+                        enter = fadeIn() + slideInHorizontally(),
+                        exit = fadeOut() + slideOutHorizontally()
+                    ) {
+                        NoteContent(content = viewedNote.content)
+                    }
+
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showingSummary,
+                        enter = fadeIn() + slideInHorizontally { it / 2 },
+                        exit = fadeOut() + slideOutHorizontally { it / 2 }
+                    ) {
+                        NoteSummary(summary = viewedNote.summary)
+                    }
                 }
 
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = showingSummary,
-                    enter = fadeIn() + slideInHorizontally { it / 2 },
-                    exit = fadeOut() + slideOutHorizontally { it / 2 }
-                ) {
-                    NoteSummary(summary = viewedNote.summary)
-                }
+                OptionSwitcher(
+                    firstOptionText = stringResource(R.string.note),
+                    secondOptionText = stringResource(R.string.summary),
+                    secondOptionSelected = showingSummary,
+                    onOptionSwitch = { showingSummary = it }
+                )
             }
 
-            OptionSwitcher(
-                firstOptionText = stringResource(R.string.note),
-                secondOptionText = stringResource(R.string.summary),
-                secondOptionSelected = showingSummary,
-                onOptionSwitch = { showingSummary = it }
-            )
+            AnimatedVisibility(
+                visible = shareUiState.loading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                CircularLoadingScreenWithBackdrop()
+            }
+
+            SnackbarHost(hostState = snackBarHostState)
         }
+    }
+
+    if (showingShareDialog) {
+        ShareNoteDialog(
+            friendList = friendList,
+            onShareWithFriends = viewModel::shareWithFriends,
+            onDismissRequest = { showingShareDialog = false }
+        )
     }
 }
 

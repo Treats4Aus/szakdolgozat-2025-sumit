@@ -20,6 +20,8 @@ import com.example.sumit.ui.notes.EditNoteDestination
 import com.example.sumit.ui.notes.EditNoteScreen
 import com.example.sumit.ui.notes.ViewNoteDestination
 import com.example.sumit.ui.notes.ViewNoteScreen
+import com.example.sumit.ui.notes.ViewSharedNoteDestination
+import com.example.sumit.ui.notes.ViewSharedNoteScreen
 import com.example.sumit.ui.scan.PhotoProcessDestination
 import com.example.sumit.ui.scan.PhotoProcessScreen
 import com.example.sumit.ui.scan.PhotoSegmentDestination
@@ -65,6 +67,9 @@ fun SumItNavHost(
                 },
                 onEditNote = {
                     navController.navigate("${EditNoteDestination.route}/$it")
+                },
+                onViewSharedNote = {
+                    navController.navigate("${ViewSharedNoteDestination.route}/$it")
                 },
                 onRegister = {
                     navController.navigate(RegisterDestination.route)
@@ -132,6 +137,17 @@ fun SumItNavHost(
             })
         ) {
             EditNoteScreen(
+                onBack = { navController.navigateUp() }
+            )
+        }
+
+        composable(
+            route = ViewSharedNoteDestination.routeWithArgs,
+            arguments = listOf(navArgument(ViewSharedNoteDestination.noteIdArg) {
+                type = NavType.StringType
+            })
+        ) {
+            ViewSharedNoteScreen(
                 onBack = { navController.navigateUp() }
             )
         }
