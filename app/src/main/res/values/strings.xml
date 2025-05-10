@@ -113,8 +113,14 @@
     <string name="hungarian">Hungarian</string>
     <string name="english">English</string>
     <string name="cancel">Cancel</string>
+
     <string name="share_with_selected">Share with selected</string>
     <string name="other_sharing_options">Other sharing options</string>
     <string name="selected_for_share">Selected for share</string>
     <string name="select_friends_to_share">Select friends to share this note with</string>
+    <string name="you_must_select_at_least_one_person">You must select at least one person to share with</string>
+    <string name="you_must_sign_in_to_share">You must sign in to share this note</string>
+    <string name="you_must_enable_sync_to_share">You must enable syncing to share this note</string>
+    <string name="note_successfully_shared">Note successfully shared</string>
+    <string name="note_sharing_failed">Note sharing failed</string>
 </resources>

@@ -102,11 +102,20 @@ fun ShareNoteDialog(
                     }
                 }
 
-                Button(onClick = { onShareWithFriends(selectedFriendIds.toList()) }) {
+                Button(
+                    onClick = {
+                        onShareWithFriends(selectedFriendIds.toList())
+                        onDismissRequest()
+                    }
+                ) {
                     Text(stringResource(R.string.share_with_selected))
                 }
 
-                Button(onClick = { }) {
+                Button(
+                    onClick = {
+                        onDismissRequest()
+                    }
+                ) {
                     Text(stringResource(R.string.other_sharing_options))
                 }
 

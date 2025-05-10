@@ -26,7 +26,14 @@ class SyncNotesWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
         for (note in localNotes) {
             if (note.firebaseId == null) {
                 try {
-                    remoteRepository.uploadNote(userId, note)
+                    val firebaseId = remoteRepository.uploadNote(userId, note)
+
+                    val updatedLocalNote = note.copy(
+                        firebaseId = firebaseId,
+                        owner = userId
+                    )
+                    localRepository.updateNote(updatedLocalNote)
+
                     Log.d(TAG, "Local note with id ${note.id} successfully uploaded")
                 } catch (e: FirebaseException) {
                     Log.e(TAG, "Local note with id ${note.id} failed to upload", e)
@@ -59,6 +66,7 @@ class SyncNotesWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
             if (localNotes.none { it.firebaseId == note.id }) {
                 val downloadedNote = Note(
                     firebaseId = note.id,
+                    owner = userId,
                     created = Date(note.created),
                     lastModified = Date(note.lastModified),
                     title = note.title,

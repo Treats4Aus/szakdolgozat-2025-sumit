@@ -32,7 +32,7 @@ class FirebaseNotesRepository(
         return userNotesQuery.dataObjects<RemoteNote>()
     }
 
-    override suspend fun uploadNote(firebaseId: String, localNote: Note) {
+    override suspend fun uploadNote(firebaseId: String, localNote: Note): String {
         val noteCollection = store.collection(NOTE_COLLECTION_NAME)
         val documentRef = noteCollection.document()
 
@@ -47,6 +47,7 @@ class FirebaseNotesRepository(
             keywords = emptyList()
         )
         documentRef.set(remoteNote).await()
+        return documentRef.id
     }
 
     override suspend fun updateNote(remoteNote: RemoteNote) {
