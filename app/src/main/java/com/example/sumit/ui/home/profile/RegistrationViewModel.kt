@@ -9,6 +9,7 @@ import com.example.sumit.data.users.UserRepository
 import com.example.sumit.utils.PasswordValidator
 import com.example.sumit.utils.TranslationPasswordValidator
 import com.google.firebase.FirebaseException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -91,6 +92,7 @@ class RegistrationViewModel(
                 }
 
                 setMessage(translationsRepository.getTranslation(R.string.successful_registration))
+                delay(1_000L)
                 setRegistrationState(RegistrationState.Finished)
             } catch (e: FirebaseException) {
                 Log.e(TAG, "Registration failed", e)

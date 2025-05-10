@@ -20,6 +20,13 @@ class RecentNotesViewModel(
     remoteNotesRepository: RemoteNotesRepository,
     userRepository: UserRepository
 ) : ViewModel() {
+    val currentUser = userRepository.currentUser
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = null
+        )
+
     val recentNotes = notesRepository
         .getRecentNotesStream()
         .stateIn(
@@ -28,7 +35,7 @@ class RecentNotesViewModel(
             initialValue = emptyList()
         )
 
-    val sharedNotes = userRepository.currentUser
+    val sharedNotes = currentUser
         .flatMapLatest { user ->
             if (user?.uid != null) {
                 remoteNotesRepository.getUserSharedNotes(user.uid)

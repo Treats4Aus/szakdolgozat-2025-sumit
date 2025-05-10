@@ -39,6 +39,8 @@ object AppViewModelProvider {
             ProfileViewModel(
                 userRepository = sumItApplication().container.userRepository,
                 notesRepository = sumItApplication().container.notesRepository,
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository,
+                preferencesRepository = sumItApplication().container.preferencesRepository,
                 translationsRepository = sumItApplication().container.translationsRepository
             )
         }
