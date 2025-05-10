@@ -28,24 +28,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.sumit.R
-import com.example.sumit.utils.DATE_FORMAT
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteCard(
     title: String,
     content: String,
-    lastModified: Date,
+    extraInfo: String,
     canModify: Boolean,
     onNoteClick: () -> Unit,
     modifier: Modifier = Modifier,
     onEditClick: () -> Unit = { },
     onDeleteClick: () -> Unit = { }
 ) {
-    val lastModifiedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(lastModified)
     var expanded by remember { mutableStateOf(false) }
 
     val haptics = LocalHapticFeedback.current
@@ -91,7 +86,7 @@ fun NoteCard(
                     )
 
                     Text(
-                        text = stringResource(R.string.last_modified, lastModifiedDate),
+                        text = extraInfo,
                         modifier = Modifier.weight(1f),
                         fontSize = 14.sp,
                         textAlign = TextAlign.End
@@ -123,7 +118,7 @@ private fun NoteCardPreview() {
     NoteCard(
         title = "Preview",
         content = "This is a preview",
-        lastModified = Date(),
+        extraInfo = "Last modified: 2025. május 10.",
         canModify = true,
         onNoteClick = { },
         onEditClick = { },

@@ -20,7 +20,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.NoteCard
-import java.util.Date
+import com.example.sumit.utils.DATE_FORMAT
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun RecentNotesTab(
@@ -45,13 +47,16 @@ fun RecentNotesTab(
         }
 
         if (recentNotes.isNotEmpty()) {
-            items(recentNotes) {
+            items(recentNotes, { it.id }) { note ->
+                val lastModifiedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
+                    .format(note.lastModified)
+
                 NoteCard(
-                    title = it.title,
-                    content = it.content,
-                    lastModified = it.lastModified,
+                    title = note.title,
+                    content = note.content,
+                    extraInfo = stringResource(R.string.last_modified, lastModifiedDate),
                     canModify = false,
-                    onNoteClick = { onViewOwnedNote(it.id) }
+                    onNoteClick = { onViewOwnedNote(note.id) }
                 )
             }
         } else {
@@ -68,13 +73,13 @@ fun RecentNotesTab(
         }
 
         if (sharedNotes.isNotEmpty()) {
-            items(sharedNotes) {
+            items(sharedNotes, { it.id }) { note ->
                 NoteCard(
-                    title = it.title,
-                    content = it.content,
-                    lastModified = Date(it.lastModified),
+                    title = note.title,
+                    content = note.content,
+                    extraInfo = stringResource(R.string.shared_by, note.owner),
                     canModify = false,
-                    onNoteClick = { onViewSharedNote(it.id) }
+                    onNoteClick = { onViewSharedNote(note.id) }
                 )
             }
         } else {

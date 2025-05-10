@@ -8,8 +8,10 @@ import com.example.sumit.data.users.UserRepository
 import com.example.sumit.utils.TIMEOUT_MILLIS
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,6 +35,15 @@ class RecentNotesViewModel(
             } else {
                 flowOf(emptyList())
             }
+        }
+        .flatMapLatest { notes ->
+            val noteFlows = notes.map { note ->
+                userRepository.getUserData(note.owner).map { userData ->
+                    note.copy(owner = userData?.username ?: note.owner)
+                }
+            }
+
+            combine(noteFlows) { it.toList() }
         }
         .stateIn(
             scope = viewModelScope,

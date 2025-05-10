@@ -35,6 +35,8 @@
     <string name="note">Note</string>
     <string name="summary">Summary</string>
     <string name="last_modified">Last modified: %1$s</string>
+    <string name="view_shared_note">View shared note</string>
+    <string name="shared_by">Shared by %1$s</string>
 
     <string name="recent_notes">Recent notes</string>
     <string name="shared_with_you">Shared with you</string>

@@ -21,6 +21,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sumit.R
 import com.example.sumit.ui.AppViewModelProvider
 import com.example.sumit.ui.common.NoteCard
+import com.example.sumit.utils.DATE_FORMAT
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun MyNotesTab(
@@ -37,11 +40,14 @@ fun MyNotesTab(
         contentPadding = PaddingValues(dimensionResource(R.dimen.medium_padding))
     ) {
         if (myNotesUiState.myNotes.isNotEmpty()) {
-            items(myNotesUiState.myNotes) { note ->
+            items(myNotesUiState.myNotes, { it.id }) { note ->
+                val lastModifiedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
+                    .format(note.lastModified)
+
                 NoteCard(
                     title = note.title,
                     content = note.content,
-                    lastModified = note.lastModified,
+                    extraInfo = stringResource(R.string.last_modified, lastModifiedDate),
                     canModify = true,
                     onNoteClick = { onViewNote(note.id) },
                     onEditClick = { onEditNote(note.id) },

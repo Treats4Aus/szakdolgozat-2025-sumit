@@ -12,6 +12,7 @@ import com.example.sumit.ui.home.profile.RegistrationViewModel
 import com.example.sumit.ui.home.recent.RecentNotesViewModel
 import com.example.sumit.ui.notes.EditNoteViewModel
 import com.example.sumit.ui.notes.ViewNoteViewModel
+import com.example.sumit.ui.notes.ViewSharedNoteViewModel
 import com.example.sumit.ui.scan.PhotoProcessViewModel
 import com.example.sumit.ui.scan.PhotoSegmentViewModel
 import com.example.sumit.ui.scan.PhotoSelectViewModel
@@ -89,6 +90,13 @@ object AppViewModelProvider {
         initializer {
             EditNoteViewModel(
                 notesRepository = sumItApplication().container.notesRepository,
+                savedStateHandle = this.createSavedStateHandle()
+            )
+        }
+
+        initializer {
+            ViewSharedNoteViewModel(
+                remoteNotesRepository = sumItApplication().container.remoteNotesRepository,
                 savedStateHandle = this.createSavedStateHandle()
             )
         }
