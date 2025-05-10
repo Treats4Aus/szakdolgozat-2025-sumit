@@ -126,4 +126,10 @@
     <string name="you_must_enable_sync_to_share">You must enable syncing to share this note</string>
     <string name="note_successfully_shared">Note successfully shared</string>
     <string name="note_sharing_failed">Note sharing failed</string>
+    <string name="notes">Notes</string>
+    <string name="profile">Profile</string>
+    <string name="open_settings">Open settings</string>
+    <string name="scan_notes">Scan notes</string>
+    <string name="sync_notes">Sync notes</string>
+    <string name="language">Language</string>
 </resources>

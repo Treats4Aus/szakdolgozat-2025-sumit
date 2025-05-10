@@ -91,7 +91,7 @@ fun SettingsScreen(
                         .padding(dimensionResource(R.dimen.medium_padding))
                 ) {
                     Text(
-                        text = "Sync notes",
+                        text = stringResource(R.string.sync_notes),
                         style = MaterialTheme.typography.displayMedium
                     )
 
@@ -119,7 +119,7 @@ fun SettingsScreen(
                         .padding(dimensionResource(R.dimen.medium_padding))
                 ) {
                     Text(
-                        text = "Language",
+                        text = stringResource(R.string.language),
                         style = MaterialTheme.typography.displayMedium
                     )
 
