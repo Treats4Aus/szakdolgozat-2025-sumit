@@ -1,3 +1,135 @@
 <resources>
     <string name="app_name">SumIt</string>
+    <string name="home">Home</string>
+
+    <string name="select_photos">Select photos</string>
+    <string name="take_photo">Take photo</string>
+    <string name="select_from_gallery">Select from gallery</string>
+    <string name="open_gallery">Open gallery</string>
+    <string name="next">Next</string>
+    <string name="no_photos_selected">No photos selected</string>
+    <string name="photo_number">Image number %1$d</string>
+    <string name="crop_image">Crop image</string>
+    <string name="delete_image">Delete image</string>
+
+    <string name="extract_text">Extract text</string>
+    <string name="done">Done</string>
+    <string name="use_slider">Use the slider to adjust text visibility</string>
+    <string name="thinner_lines">Thinner lines</string>
+    <string name="thicker_lines">Thicker lines</string>
+
+    <string name="processing_photos">Processing photos</string>
+    <string name="initializing">Initializing</string>
+    <string name="downloading_models">Downloading models</string>
+    <string name="recognizing_text">Recognizing text</string>
+    <string name="refining_text">Refining text</string>
+    <string name="creating_note">Creating note</string>
+    <string name="generating_keywords">Generating keywords</string>
+
+    <string name="title">Title</string>
+    <string name="content">Content</string>
+    <string name="save_note">Save note</string>
+    <string name="view_note">View note</string>
+    <string name="edit_note">Edit note</string>
+    <string name="delete_note">Delete note</string>
+    <string name="note">Note</string>
+    <string name="summary">Summary</string>
+    <string name="last_modified">Last modified: %1$s</string>
+    <string name="view_shared_note">View shared note</string>
+    <string name="shared_by">Shared by %1$s</string>
+
+    <string name="recent_notes">Recent notes</string>
+    <string name="shared_with_you">Shared with you</string>
+    <string name="no_recent_notes">You don\'t have any recent notes</string>
+    <string name="use_scan_button">Use the scan button to create one now</string>
+    <string name="no_shared_notes">You don\'t have any shared notes</string>
+    <string name="sign_in_or_create_account">Sign in or create an account to start sharing notes</string>
+    <string name="no_notes">You don\'t have any notes</string>
+
+    <string name="add_friends">Add friends and start sharing notes</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="no_account_question">Don\'t have an account?</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+
+    <string name="name">Name</string>
+    <string name="username">Username</string>
+    <string name="password_confirm">Password confirm</string>
+    <string name="create_account">Create account</string>
+    <string name="sign_up_to_sumit">Sign up to SumIt</string>
+
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="confirm">Confirm</string>
+    <string name="change_password">Change password</string>
+
+    <string name="sign_out">Sign out</string>
+    <string name="your_friends">Your friends</string>
+    <string name="add_a_friend">Add a friend</string>
+    <string name="your_info">Your info</string>
+    <string name="no_friends">Your don\'t have any friends</string>
+    <string name="click_button_to_add_friend">Click the button to add your first friend to start sharing notes</string>
+
+    <string name="incorrect_email_or_password">Incorrect email address or password</string>
+    <string name="please_fill_out_every_field">Please fill out every field</string>
+    <string name="password_and_confirm_must_match">The password and the confirm password must match</string>
+    <string name="password_changed_successfully">Password changed successfully</string>
+    <string name="incorrect_password">Incorrect password</string>
+    <string name="password_change_failed">Password change failed</string>
+
+    <string name="username_must_be_long">The username must be at least 3 characters long</string>
+    <string name="unsuccessful_registration">Unsuccessful registration</string>
+    <string name="successful_registration">Successful registration</string>
+    <string name="password_must_be_long">Password must be at least 8 characters long</string>
+    <string name="password_must_contain_number">Password must contain numbers</string>
+    <string name="password_must_contain_uppercase">Password must contain uppercase letters</string>
+    <string name="password_must_not_contain_whitespace">Password must not contain whitespaces</string>
+    <string name="must_sign_in_first">You must sign in first</string>
+
+    <string name="friends_since">Friends since %1$s</string>
+    <string name="manage_friend">Manage friend</string>
+    <string name="remove_friend">Remove friend</string>
+    <string name="block_friend">Block friend</string>
+    <string name="add_friend_via_email">Add a friend via email</string>
+    <string name="send_request">Send request</string>
+    <string name="friend_request_sent">Friend request sent</string>
+    <string name="friend_request_failed">Friend request failed</string>
+    <string name="no_user_with_email">No user with this email</string>
+    <string name="enter_user_email">Enter the user\'s email address</string>
+    <string name="user_already_friend">User is already friend</string>
+    <string name="user_blocked_you">User has blocked you</string>
+    <string name="friend_request_already_pending">Friend request is already pending</string>
+    <string name="pending_friend_requests">Pending friend requests</string>
+    <string name="request_sent_on">Friend request sent %1$s</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="block">Block</string>
+    <string name="friend_request_accepted">Friend request accepted</string>
+    <string name="friend_request_rejected">Friend request rejected</string>
+    <string name="user_blocked">User successfully blocked</string>
+    <string name="friend_removed">Friend removed</string>
+
+    <string name="settings">Settings</string>
+    <string name="hungarian">Hungarian</string>
+    <string name="english">English</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="share_with_selected">Share with selected</string>
+    <string name="other_sharing_options">Other sharing options</string>
+    <string name="selected_for_share">Selected for share</string>
+    <string name="select_friends_to_share">Select friends to share this note with</string>
+    <string name="you_must_select_at_least_one_person">You must select at least one person to share with</string>
+    <string name="you_must_sign_in_to_share">You must sign in to share this note</string>
+    <string name="you_must_enable_sync_to_share">You must enable syncing to share this note</string>
+    <string name="note_successfully_shared">Note successfully shared</string>
+    <string name="note_sharing_failed">Note sharing failed</string>
+    <string name="notes">Notes</string>
+    <string name="profile">Profile</string>
+    <string name="open_settings">Open settings</string>
+    <string name="scan_notes">Scan notes</string>
+    <string name="sync_notes">Sync notes</string>
+    <string name="language">Language</string>
 </resources>
