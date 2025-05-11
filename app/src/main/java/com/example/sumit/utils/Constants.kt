@@ -28,3 +28,5 @@ const val MODEL_NAME = "gemma3-1b-it-int4.task"
 const val TIMEOUT_MILLIS = 5_000L
 
 const val DATE_FORMAT = "yyyy MMMM dd"
+
+const val LANGUAGE_EXTRA_NAME = "LANGUAGE"

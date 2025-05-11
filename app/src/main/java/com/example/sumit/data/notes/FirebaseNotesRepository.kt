@@ -83,14 +83,14 @@ class FirebaseNotesRepository(
             .setRequiresBatteryNotLow(true)
             .build()
 
-        val syncWorkRequest = PeriodicWorkRequestBuilder<SyncNotesWorker>(10, TimeUnit.MINUTES)
+        val syncWorkRequest = PeriodicWorkRequestBuilder<SyncNotesWorker>(30, TimeUnit.MINUTES)
             .setConstraints(constraints)
-            .setInitialDelay(10, TimeUnit.SECONDS)
+            .setInitialDelay(5, TimeUnit.SECONDS)
             .build()
 
         workManager.enqueueUniquePeriodicWork(
             SYNC_NOTES_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             syncWorkRequest
         )
     }

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sumit.R
 import com.example.sumit.data.notes.NotesRepository
+import com.example.sumit.data.notes.RemoteNotesRepository
+import com.example.sumit.data.preferences.PreferencesRepository
 import com.example.sumit.data.translations.TranslationsRepository
 import com.example.sumit.data.users.FriendData
 import com.example.sumit.data.users.FriendshipStatus
@@ -19,6 +21,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -31,6 +34,8 @@ private const val TAG = "ProfileViewModel"
 class ProfileViewModel(
     private val userRepository: UserRepository,
     private val notesRepository: NotesRepository,
+    private val remoteNotesRepository: RemoteNotesRepository,
+    private val preferencesRepository: PreferencesRepository,
     private val translationsRepository: TranslationsRepository
 ) : ViewModel() {
     private val passwordValidator: PasswordValidator =
@@ -113,6 +118,10 @@ class ProfileViewModel(
             } catch (e: FirebaseException) {
                 Log.e(TAG, "Login error", e)
                 setMessage(translationsRepository.getTranslation(R.string.incorrect_email_or_password))
+            }
+
+            if (preferencesRepository.syncPreference.first()) {
+                remoteNotesRepository.startSync()
             }
 
             setLoginInProgress(false)

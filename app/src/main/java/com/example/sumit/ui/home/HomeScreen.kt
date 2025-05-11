@@ -81,17 +81,17 @@ fun HomeScreen(
         NavigationItemContent(
             page = HomeTab.Recent,
             icon = Icons.Filled.Home,
-            text = "Home"
+            text = stringResource(R.string.home)
         ),
         NavigationItemContent(
             page = HomeTab.Notes,
             icon = Icons.AutoMirrored.Filled.StickyNote2,
-            text = "Notes"
+            text = stringResource(R.string.notes)
         ),
         NavigationItemContent(
             page = HomeTab.Profile,
             icon = Icons.Filled.Person,
-            text = "Profile"
+            text = stringResource(R.string.profile)
         )
     )
 
@@ -108,7 +108,7 @@ fun HomeScreen(
                         IconButton(onClick = onOpenSettings) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
-                                contentDescription = "Open settings"
+                                contentDescription = stringResource(R.string.open_settings)
                             )
                         }
                     }
@@ -185,7 +185,10 @@ private fun NewScanFAB(
         }
 
         FloatingActionButton(onClick = onFABClick) {
-            Icon(imageVector = Icons.Default.DocumentScanner, contentDescription = "Scan notes")
+            Icon(
+                imageVector = Icons.Default.DocumentScanner,
+                contentDescription = stringResource(R.string.scan_notes)
+            )
         }
     }
 }

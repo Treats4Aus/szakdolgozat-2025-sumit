@@ -31,6 +31,7 @@ fun RecentNotesTab(
     modifier: Modifier = Modifier,
     viewModel: RecentNotesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val user by viewModel.currentUser.collectAsState()
     val recentNotes by viewModel.recentNotes.collectAsState()
     val sharedNotes by viewModel.sharedNotes.collectAsState()
 
@@ -84,7 +85,7 @@ fun RecentNotesTab(
             }
         } else {
             item {
-                NoSharedNotes(isSignedIn = false)
+                NoSharedNotes(isSignedIn = user != null)
             }
         }
     }

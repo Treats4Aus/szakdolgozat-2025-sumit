@@ -18,7 +18,7 @@ class DataStorePreferencesRepository(
 
     override val langPreference: Flow<String> =
         dataStore.data.map { preferences ->
-            preferences[LANG_CODE] ?: "HU"
+            preferences[LANG_CODE] ?: "hu"
         }
 
     override suspend fun setSyncPreference(pref: Boolean) {

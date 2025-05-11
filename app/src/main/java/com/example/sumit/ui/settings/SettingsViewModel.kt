@@ -24,7 +24,7 @@ class SettingsViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = "HU"
+            initialValue = "hu"
         )
 
     fun updateSyncPreference(pref: Boolean) = viewModelScope.launch {
@@ -37,7 +37,7 @@ class SettingsViewModel(
         preferencesRepository.setSyncPreference(pref)
     }
 
-    fun updateLangPreference(pref: String) = viewModelScope.launch {
+    suspend fun updateLangPreference(pref: String) {
         preferencesRepository.setLangPreference(pref)
     }
 }

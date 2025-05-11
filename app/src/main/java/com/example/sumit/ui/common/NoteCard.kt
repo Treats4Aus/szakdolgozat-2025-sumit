@@ -78,7 +78,7 @@ fun NoteCard(
                     Text(
                         text = content.replace("\n", " "),
                         modifier = Modifier
-                            .weight(2f)
+                            .weight(3f)
                             .padding(end = dimensionResource(R.dimen.medium_padding)),
                         fontSize = 14.sp,
                         maxLines = 2,
@@ -87,7 +87,7 @@ fun NoteCard(
 
                     Text(
                         text = extraInfo,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(2f),
                         fontSize = 14.sp,
                         textAlign = TextAlign.End
                     )
