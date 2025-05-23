@@ -13,6 +13,13 @@ import androidx.compose.ui.res.stringResource
 import com.example.sumit.R
 import com.example.sumit.data.notes.Note
 
+/**
+ * A form to edit the title and content of a note.
+ * @param note The current state of the note
+ * @param onTitleEdit Called when the title is changed by the user
+ * @param onContentEdit Called when the content is changed by the user
+ * @param modifier The [Modifier] to be applied to this form
+ */
 @Composable
 fun EditNoteForm(
     note: Note,

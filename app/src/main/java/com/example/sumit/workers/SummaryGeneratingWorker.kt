@@ -14,6 +14,9 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "SummaryGeneratingWorker"
 
+/**
+ * Worker to use inference to generate a summary and keywords for a given text.
+ */
 class SummaryGeneratingWorker(ctx: Context, params: WorkerParameters) :
     CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {

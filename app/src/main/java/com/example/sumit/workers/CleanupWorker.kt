@@ -11,6 +11,9 @@ import java.io.File
 
 private const val TAG = "CleanupWorker"
 
+/**
+ * Worker to delete images from internal storage to free up space.
+ */
 class CleanupWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {

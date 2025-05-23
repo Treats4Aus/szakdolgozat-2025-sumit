@@ -12,6 +12,9 @@ import java.util.Date
 
 private const val TAG = "SyncNotesWorker"
 
+/**
+ * Worker to upload and download notes from the remote database.
+ */
 class SyncNotesWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val app = applicationContext as SumItApplication

@@ -20,6 +20,9 @@ import java.io.IOException
 
 private const val TAG = "TextRecognitionWorker"
 
+/**
+ * Worker to extract text from a segmented image.
+ */
 class TextRecognitionWorker(ctx: Context, param: WorkerParameters) : CoroutineWorker(ctx, param) {
     override suspend fun doWork(): Result {
         val photoIndex = inputData.getInt(KEY_PHOTO_INDEX, 0)

@@ -17,6 +17,9 @@ import java.io.File
 
 private const val TAG = "ModelDownloadWorker"
 
+/**
+ * Worker to download the required models for processing from the cloud.
+ */
 class ModelDownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     private val modelStoragePath = "models/$MODEL_NAME"
 

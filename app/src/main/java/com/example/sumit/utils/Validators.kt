@@ -3,7 +3,15 @@ package com.example.sumit.utils
 import com.example.sumit.R
 import com.example.sumit.data.translations.TranslationsRepository
 
+/**
+ * Handles the validation of password to make sure they conform to every rule.
+ */
 interface PasswordValidator {
+    /**
+     * Checks if a password is strong enough.
+     * @param password The password entered by the user
+     * @return The validation error message, or `null` if none was found
+     */
     fun validate(password: String): String?
 }
 

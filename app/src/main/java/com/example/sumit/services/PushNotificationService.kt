@@ -7,6 +7,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+/**
+ * Handles receiving push notifications in the background and uploading new FCM tokens to the
+ * remote database.
+ */
 class PushNotificationService : FirebaseMessagingService() {
     private val job = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + job)

@@ -16,6 +16,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import com.example.sumit.R
 
+/**
+ * A circular indefinite loading screen that fills out the screen and has a semi-transparent
+ * backdrop.
+ * @param modifier The [Modifier] to be applied to the backdrop
+ * @param indicatorSize The size of the spinner
+ */
 @Composable
 fun CircularLoadingScreenWithBackdrop(
     modifier: Modifier = Modifier,

@@ -38,6 +38,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * A card to show information about a friend.
+ * @param friendData The user data of the friend
+ * @param onRemoveFriend Called when removing this friend
+ * @param onBlockFriend Called when blocking this friend
+ * @param modifier The [Modifier] to be applied to this card
+ */
 @Composable
 fun FriendCard(
     friendData: FriendData,
