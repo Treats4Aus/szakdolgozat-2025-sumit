@@ -7,12 +7,15 @@ import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.dataObjects
+import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -25,7 +28,8 @@ private const val FRIENDSHIP_COLLECTION_NAME = "friendships"
 @OptIn(ExperimentalCoroutinesApi::class)
 class FirebaseUserRepository(
     private val auth: FirebaseAuth,
-    private val store: FirebaseFirestore
+    private val store: FirebaseFirestore,
+    private val messaging: FirebaseMessaging
 ) : UserRepository {
     override val currentUser: Flow<FirebaseUser?> = callbackFlow {
         val authStateListener = FirebaseAuth.AuthStateListener { state ->
@@ -39,6 +43,9 @@ class FirebaseUserRepository(
 
     override suspend fun signInWithEmailAndPassword(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).await()
+
+        val deviceToken = messaging.token.await()
+        addDeviceToken(deviceToken)
     }
 
     override suspend fun registerWithEmailAndPassword(email: String, password: String): String? {
@@ -195,5 +202,21 @@ class FirebaseUserRepository(
         val friendshipCollection = store.collection(FRIENDSHIP_COLLECTION_NAME)
         val documentRef = friendshipCollection.document(friendshipData.id)
         documentRef.set(friendshipData.copy(status = FriendshipStatus.Blocked.toString())).await()
+    }
+
+    override suspend fun addDeviceToken(token: String) {
+        val collection = store.collection(USER_COLLECTION_NAME)
+        val currentUser = currentUser.first() ?: return
+
+        val documentRef = collection.document(currentUser.uid)
+        val user = documentRef.get().await().toObject<UserData>() ?: return
+
+        val updatedDeviceTokens = user.deviceTokens.toMutableSet()
+        updatedDeviceTokens.add(token)
+
+        val updatedUser = user.copy(
+            deviceTokens = updatedDeviceTokens.toList()
+        )
+        documentRef.set(updatedUser).await()
     }
 }

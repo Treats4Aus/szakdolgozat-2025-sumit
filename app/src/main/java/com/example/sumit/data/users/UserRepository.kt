@@ -31,4 +31,6 @@ interface UserRepository {
     suspend fun rejectFriendRequest(friendshipData: FriendshipData)
 
     suspend fun blockFriend(friendshipData: FriendshipData)
+
+    suspend fun addDeviceToken(token: String)
 }
