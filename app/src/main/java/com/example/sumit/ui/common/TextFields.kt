@@ -18,6 +18,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
+/**
+ * An outlined text field that supports hiding the entered password and revealing it when clicking
+ * the eye icon.
+ * @param password The currently entered text
+ * @param onPasswordChange Called when the user changes the text field's content
+ * @param modifier The [Modifier] to be applied to the text field
+ * @param enabled Whether the text field should be enabled
+ * @param singleLine Whether the text field should only allow one line to be written into it
+ * @param keyboardOptions options for the text field
+ * @param keyboardActions actions for the text field
+ */
 @Composable
 fun OutlinedPasswordField(
     password: String,

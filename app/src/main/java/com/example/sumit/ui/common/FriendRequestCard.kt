@@ -38,6 +38,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * A card to respond to a pending friend request.
+ * @param friendData The user data of the user making the request
+ * @param onAccept Called when accepting the friend request
+ * @param onReject Called when rejecting the friend request
+ * @param onBlock Called when blocking the user sending the request
+ * @param modifier The [Modifier] to be applied to this card
+ */
 @Composable
 fun FriendRequestCard(
     friendData: FriendData,

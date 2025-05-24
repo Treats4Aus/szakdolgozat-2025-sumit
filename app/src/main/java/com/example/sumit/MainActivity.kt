@@ -1,11 +1,16 @@
 package com.example.sumit
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.sumit.ui.SumItApp
 import com.example.sumit.ui.theme.SumItTheme
@@ -44,6 +49,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        requestNotificationPermission()
+
         enableEdgeToEdge()
         setContent {
             SumItTheme {
@@ -59,6 +66,24 @@ class MainActivity : ComponentActivity() {
             val app = applicationContext as SumItApplication
             val language = app.container.preferencesRepository.langPreference.first()
             outState.putString(LANGUAGE_EXTRA_NAME, language)
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission =
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasPermission) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    0
+                )
+            }
         }
     }
 }

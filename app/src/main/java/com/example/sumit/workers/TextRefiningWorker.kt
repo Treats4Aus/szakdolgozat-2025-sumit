@@ -14,6 +14,9 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "TextRefiningWorker"
 
+/**
+ * Worker to use LLM inference to fix spelling errors in the provided text.
+ */
 class TextRefiningWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val pageCount = inputData.getInt(KEY_PAGE_COUNT, 1)

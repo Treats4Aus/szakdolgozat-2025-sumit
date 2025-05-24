@@ -29,6 +29,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.sumit.R
 
+/**
+ * A card to show information about a note.
+ * @param title The title of the note
+ * @param content The content of the note
+ * @param extraInfo Additional text to be shown
+ * @param canModify Whether additional operation should be supported
+ * @param onNoteClick Called when the card is clicked
+ * @param modifier The [Modifier] to be applied to this card
+ * @param onEditClick Called when the user selects 'Edit note'
+ * @param onDeleteClick Called when the user selects 'Delete note'
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteCard(

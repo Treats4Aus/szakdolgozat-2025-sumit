@@ -20,6 +20,9 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "SegmentPhotoWorker"
 
+/**
+ * Worker to apply segmentation to an image.
+ */
 class SegmentPhotoWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val photoIndex = inputData.getInt(KEY_PHOTO_INDEX, 0)
