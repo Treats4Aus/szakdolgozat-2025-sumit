@@ -20,6 +20,9 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 
+/**
+ * Contains dependencies used by view models, workers and services, and provides them with DI.
+ */
 interface AppContainer {
     val notesRepository: NotesRepository
 

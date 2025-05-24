@@ -16,6 +16,9 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "SavePhotoToTempWorker"
 
+/**
+ * Worker to save an image to internal storage.
+ */
 class SavePhotoToTempWorker(ctx: Context, params: WorkerParameters) :
     CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {

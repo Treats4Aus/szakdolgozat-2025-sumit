@@ -12,6 +12,9 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "TextStructuringWorker"
 
+/**
+ * Worker to use LLM inference to create paragraphs from the provided raw text.
+ */
 class TextStructuringWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val refinedText = inputData.getString(KEY_NOTE_TEXT)
